@@ -1,6 +1,7 @@
 
 import math
 import numpy as np
+np.set_printoptions(precision=4, suppress=True)
 
 import copy
 from tqdm import tqdm
@@ -27,11 +28,10 @@ class Node:
         
 
 class MCTS:
-    def __init__(self, simulator, num_actions, gamma, action_multi,
+    def __init__(self, simulator, num_actions, gamma,
                  max_steps, max_depth, rollout_max_depth):
         self.simulator = simulator
-        self.action_multi = action_multi
-        self.num_actions = num_actions*action_multi
+        self.num_actions = num_actions
         self.gamma = gamma
         self.max_steps = max_steps
         self.max_depth = max_depth
@@ -43,17 +43,29 @@ class MCTS:
         logging.debug(f"max_depth={self.max_depth}")
         logging.debug(f"rollout_max_depth={self.rollout_max_depth}")
 
-    def run(self, cur_state):
+    def run(self, ep_step, cur_state):
         cur_node = Node()
         for i_step in range(self.max_steps):
-            logging.info(f"\n\n-> i_step={i_step}")
-            self.search(cur_node, cur_state, 0, False, debug=False)
+            # logging.warn(f"\n\n-> i_step={i_step}")
+            action, child_node = self.select_action_ucb(cur_node)
+            next_state, reward, terminated, _, _ = self.simulator.step(cur_state, action)
+            self.search(child_node, next_state, 1, terminated, debug=False)
 
+            q = reward + self.gamma*haver21count(
+                child_node, self.num_actions, debug=False)
+
+            w = 1/child_node.nvisits
+            child_node.q_value = (1-w)*child_node.q_value + w*q
+
+        # if (ep_step+1) % 1 == 0:
+        #     print(f"ep_step = {ep_step+1}")
+        #     print(f"cur_node.q_value = {cur_node.q_value}")
+        #     for idx, child in enumerate(cur_node.children):
+        #         print(f"child={idx}, child.q_value={child.q_value:0.4f}")
+        
         # logging.warn(f"done")
         # logging.warn(f"cur_node.children={cur_node.children}")
-        action = self.get_max_ucb_child(cur_node, debug=False)
-        # action = action % self.action_multi
-        return action
+        return self.get_max_ucb_child(cur_node, debug=False)
     
     def search(self, cur_node, cur_state, depth, terminated, debug):
         logging.info(f"\n-> search")
@@ -70,7 +82,6 @@ class MCTS:
         elif depth <= self.max_depth:
             logging.info(f"case: depth <= max_depth")
             action, child_node = self.select_action_ucb(cur_node, debug)
-            # action = action % self.action_multi
             logging.info(f"action={action}")
             next_state, reward, terminated, _, _ = self.simulator.step(cur_state, action)
             q = reward + self.gamma*self.search(child_node, next_state, depth+1, terminated, debug)
@@ -108,7 +119,6 @@ class MCTS:
         for i_depth in range(self.rollout_max_depth):
             # logging.info(f"i_depth={i_depth}")
             action = np.random.choice(range(self.num_actions))
-            # action = action % self.action_multi
             # logging.info(f"action={action}")
             next_state, reward, terminated, _, _ = \
                 self.simulator.step(cur_state, action)
@@ -151,31 +161,51 @@ class MCTS:
 
         return max_idx
             
+def haver21count(cur_node, num_actions, debug=False):
+    rhat_idx = None
+    rhat_gam = None
+    rhat_muhat = None
+    max_lcb = -np.inf
+    num_children = len(cur_node.children)
+    total_nvisits = np.sum([child.nvisits for child in cur_node.children])
+    for idx, child in enumerate(cur_node.children):
+        gam_log = (num_children*total_nvisits/child.nvisits)**4
+        child_gam = np.sqrt(18/child.nvisits*np.log(gam_log))
+        child_lcb = child.q_value - child_gam
+        if child_lcb > max_lcb:
+            max_lcb = child_lcb
+            rhat_idx = idx
+            rhat_gam = child_gam
+            # rhat_muhat = child.q_value
 
-    
-# def mcts_learning(env, num_episodes_train, eps_max_steps, mcts_max_steps, tdqm_disable):
-
-#     stats = []
-#     for i_eps in tqdm(
-#             range(num_episodes_train), desc="train q_learning", disable=tdqm_disable):
-
-#         state, info = env.reset()
-#         state = f"{state}"
-#         start_state = copy.deepcopy(state)
-
-#         eps_reward = 0.0
-#         for i_step in range(eps_max_steps):
-#             mcts = MCTS(copy.deepcopy(env))
-#             action = mcts.search(mcts_max_steps)
-
-#             _, reward, terminated, truncated, _ = env.step(action)
-#             eps_reward += reward
-
-#             # env.render()
-#             if terminated or truncated:
-#                 break
-
-#         print(reward)
-#         stats.append((i_step+1, eps_reward/(i_step+1)))
+    # print(max_lcb)
+    Bset_idxes = []
+    Bset_muhats = np.zeros(len(cur_node.children))
+    Bset_nvisits = np.zeros(len(cur_node.children))
+    for idx, child in enumerate(cur_node.children):
+        gam_log = (num_children*total_nvisits/child.nvisits)**4
+        child_gam = np.sqrt(18/child.nvisits*np.log(gam_log))
+        # if debug:
+        #     logging.warn(f"rhat_gam = {rhat_gam:0.4f}")
+        #     logging.warn(f"child_gam = {child_gam:0.4f}")
+        if child.q_value >= max_lcb and child_gam <= 3.0/2*rhat_gam:
+            Bset_muhats[idx] = child.q_value
+            Bset_nvisits[idx] = child.nvisits
+            Bset_idxes.append(idx)
             
-#     return stats
+
+    Bset_probs = Bset_nvisits/np.sum(Bset_nvisits)
+    q_est = np.dot(Bset_muhats, Bset_probs)
+    if debug:
+        logging.warn(f"children.nvisits = {[child.nvisits for child in cur_node.children]}")
+        logging.warn(f"children.q_value = {np.array([child.q_value for child in cur_node.children])}")
+        logging.warn(f"max_lcb = {max_lcb:0.4f}")
+        logging.warn(f"Bset_idxes = {Bset_idxes}")
+        logging.warn(f"Bset_nvisits = {Bset_nvisits}")
+        logging.warn(f"Bset_probs = {Bset_probs}")
+        logging.warn(f"Bset_muhats = {Bset_muhats}")
+        # loging.warn(tmp)
+        logging.warn(f"Q_est = {q_est:.2f}")
+
+    return q_est
+    

@@ -7,24 +7,11 @@ import time
 
 import gym
 from mcts import MCTS
+from utils import FrozenLakeSimulator
 
 import logging
 logging.basicConfig(level=logging.WARNING)
 
-
-class FrozenLakeSimulator:
-    def __init__(self, trans_probs, num_actions):
-        self.trans_probs = trans_probs
-        self.num_actions = num_actions
-
-    def step(self, state, action):
-        transitions = self.trans_probs[state][action]
-        trans_p = np.array([t[0] for t in transitions])
-        # logging.info(f"action_probs = {action_probs}")
-        idx = np.random.choice(len(trans_p), 1, p=trans_p)[0]
-        p, next_state, reward, terminated = transitions[idx]
-        # logging.info(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
-        return (int(next_state), reward, terminated, False, {"prob": p})
 
 def main():
     np.random.seed(0)
@@ -91,22 +78,6 @@ def main():
             print(f"ep={i_ep+1}, avg_reward = {all_ep_reward/(i_ep+1):0.4f}, run_time={(end_time-start_time)/(i_ep+1):0.4f}")
         
     print(f"avg_reward = {all_ep_reward/num_episodes_train:0.4f}")
-    # stats = mcts_learning(
-    #     env, num_episodes_train, eps_max_steps, mcts_max_steps, tdqm_disable=False)
-    # print(stats)
-
-    # # evaluate
-    # episode_reward_ary = evaluate(env, Q_table, num_episodes_eval, max_steps)
-    # reward_mean = np.mean(episode_reward_ary)
-    # reward_std = np.std(episode_reward_ary)
-    # print(f"reward = {reward_mean:.2f} +/- {reward_std:.2f}")
-
-    # env = gym.make(
-    #     env_id, map_name="4x4", is_slippery=True, render_mode="human")
-    # episode_reward_ary = evaluate(env, Q_table, num_episodes_eval, max_steps)
-    # reward_mean = np.mean(episode_reward_ary)
-    # reward_std = np.std(episode_reward_ary)
-    # print(f"reward = {reward_mean:.2f} +/- {reward_std:.2f}")
 
 if __name__ == '__main__':
     main()
