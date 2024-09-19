@@ -19,14 +19,17 @@ def main():
     
     # params
     env_id = "FrozenLake-v1"
+    action_multi = 1
     gamma = 0.95
     num_episodes_train = 100
     num_episodes_eval = 50
     eps_max_steps = 100
     
-    mcts_max_steps = 2000
+    mcts_max_iterations = 3000
     mcts_max_depth = 3
     mcts_rollout_max_depth = 100
+
+    ucb_param = 1.0
 
     # create gym env
     env = gym.make(
@@ -56,16 +59,17 @@ def main():
         state, info = env.reset()
         # state = f"{state}"
 
-        mcts = MCTS(simulator, num_actions, gamma,
-                    mcts_max_steps, mcts_max_depth, mcts_rollout_max_depth)
+        mcts = MCTS(simulator, num_actions, gamma, action_multi,
+                    mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
+                    ucb_param)
 
         ep_reward = 0
         for i_step in range(eps_max_steps):
-            action = mcts.run(int(state))
+            action = mcts.run(state)
             next_state, reward, terminated, truncated, info = env.step(action)
             ep_reward += reward
 
-            if terminated or truncated:
+            if terminated:
                 break
 
             state = next_state

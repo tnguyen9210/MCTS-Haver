@@ -24,7 +24,7 @@ def main():
     num_ep_trials = 100
     ep_max_steps = 100
     
-    mcts_max_steps = 2000
+    mcts_max_iterations = 2000
     mcts_max_depth = 3
     mcts_rollout_max_depth = 100
 
@@ -57,7 +57,7 @@ def main():
         # state = f"{state}"
 
         mcts = MCTS_Haver(simulator, num_actions, gamma, action_multi,
-                    mcts_max_steps, mcts_max_depth, mcts_rollout_max_depth,
+                    mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
                     update_method="haver")
 
         ep_reward = 0
