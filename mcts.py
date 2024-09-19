@@ -73,10 +73,9 @@ class MCTS:
             self.Q_nvisits[cur_state][action] += 1
             total_nvisits = np.sum(self.Q_nvisits[cur_state])
             
-            w = 1/total_nvisits
-            q_value = self.Q_table[cur_state]
-            
-            self.Q_table[cur_state][action] = (1-w)*self.Q_table[cur_state][action] + w*q
+            w = 1/total_nvisits            
+            self.Q_table[cur_state][action] = \
+                (1-w)*self.Q_table[cur_state][action] + w*q
                         
             return q
 
