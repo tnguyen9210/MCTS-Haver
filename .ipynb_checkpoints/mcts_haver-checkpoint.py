@@ -192,7 +192,7 @@ def haver21count(action_values, action_nvisits, num_actions, hparam_haver_var, d
                 # rhat_muhat = child.q_value
 
     # print(max_lcb)
-    # Bset_idxes = []
+    Bset_idxes = []
     Bset_muhats = np.zeros(num_actions)
     Bset_nvisits = np.zeros(num_actions)
     for a in range(num_actions):
@@ -207,9 +207,8 @@ def haver21count(action_values, action_nvisits, num_actions, hparam_haver_var, d
             if a_value >= max_lcb and a_gam <= 3.0/2*rhat_gam:
                 Bset_muhats[a] = a_value
                 Bset_nvisits[a] = a_nvisits
-                # Bset_idxes.append(a)
-        else:
-            Bset_nvisits[a] = 0 
+                Bset_idxes.append(a)
+            
 
     Bset_probs = Bset_nvisits/np.sum(Bset_nvisits)
     haver_est = np.dot(Bset_muhats, Bset_probs)
