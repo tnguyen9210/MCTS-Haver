@@ -123,7 +123,6 @@ class MCTS:
             stop
 
         
-
         total_nvisits = np.sum(action_nvisits)
         action_bonuses = np.sqrt(2*np.log(total_nvisits)/action_nvisits)
         action_ucbs = action_values + action_bonuses*self.hparam_ucb_scale
