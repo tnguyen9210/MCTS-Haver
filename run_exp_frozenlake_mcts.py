@@ -6,8 +6,9 @@ import random
 import time
 
 import gym
+from env import FrozenLakeCustom, FrozenLakeSimulator
+
 from mcts_haver import MCTS
-from utils import FrozenLakeSimulator
 
 import logging
 logging.basicConfig(level=logging.WARNING)
@@ -24,7 +25,7 @@ def main():
     num_trial_episodes = 100
     ep_max_steps = 100
     
-    mcts_max_iterations = 2000
+    mcts_max_iterations = 100
     mcts_max_depth = 3
     mcts_rollout_max_depth = 100
 
@@ -32,8 +33,9 @@ def main():
     hparam_haver_var = 1.0
 
     # create gym env
-    env = gym.make(
-        env_id, map_name="4x4", is_slippery=False)
+    # env = gym.make(
+    #     env_id, map_name="4x4", is_slippery=False)
+    env = FrozenLakeCustom(map_name="4x4", is_slippery=False, render_mode=None)
     
     num_states = env.observation_space.n
     num_actions = env.action_space.n
@@ -46,14 +48,17 @@ def main():
     simulator = FrozenLakeSimulator(env.P, num_actions)
     # state, info = env.reset()
     # logging.info(f"state = {state}")
-    # actions_ary = [2, 0, 1, 1, 2, 2, 3, 1, 1, 2]
+    # actions_ary = [2, 1, 2, 0, 1, 1, 2, 2, 3, 1, 1, 2]
     # for action in actions_ary:
     #     new_state, reward, terminated, truncated, info = simulator.step(state, action)
-    #     logging.info(f"state, action, new_state, terminated = {state, action, new_state, terminated}")
-    #     state = new_state
+    #     logging.info(f"state, action, new_state, reward, terminated = {state, action, new_state, reward, terminated}")
+    #     if terminated:
+    #         state = 0
+    #     else:
+    #         state = new_state
     
     # run mcts trials
-    update_method = "haver"
+    update_method = "avg"
     run_mcts_trials(
         env, simulator, num_trial_episodes, ep_max_steps, gamma, action_multi,
         mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
@@ -101,7 +106,7 @@ def run_mcts_trials(
         if (i_ep+1) % 10 == 0:
             print(f"ep={i_ep+1}, avg_reward = {all_ep_reward/(i_ep+1):0.4f}, run_time={(end_time-start_time)/(i_ep+1):0.4f}")
         
-    print(f"avg_reward = {all_ep_reward/num_episodes_train:0.4f}")
+    print(f"avg_reward = {all_ep_reward/num_trial_episodes:0.4f}")
 
 
 if __name__ == '__main__':
