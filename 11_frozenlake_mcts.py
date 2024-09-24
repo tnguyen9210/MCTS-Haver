@@ -21,11 +21,11 @@ def main():
     # params
     env_id = "FrozenLake-v1"
     action_multi = 1
-    gamma = 1.0
-    num_trial_episodes = 100
+    gamma = 0.95
+    num_trial_episodes = 40
     ep_max_steps = 100
     
-    mcts_max_iterations = 100
+    mcts_max_iterations = 2000
     mcts_max_depth = 3
     mcts_rollout_max_depth = 100
 
@@ -36,6 +36,7 @@ def main():
     # env = gym.make(
     #     env_id, map_name="4x4", is_slippery=False)
     env = FrozenLakeCustom(map_name="4x4", is_slippery=False, render_mode=None)
+    simulator = FrozenLakeSimulator(env.P)
     
     num_states = env.observation_space.n
     num_actions = env.action_space.n
@@ -44,26 +45,23 @@ def main():
     logging.info(f"num_actions = {num_actions}")
     logging.info(f"sample_action = {env.action_space.sample()}")
     # logging.info(f"trans_probs = {env.P}")
-
-    simulator = FrozenLakeSimulator(env.P, num_actions)
-    # state, info = env.reset()
-    # logging.info(f"state = {state}")
-    # actions_ary = [2, 1, 2, 0, 1, 1, 2, 2, 3, 1, 1, 2]
-    # for action in actions_ary:
-    #     new_state, reward, terminated, truncated, info = simulator.step(state, action)
-    #     logging.info(f"state, action, new_state, reward, terminated = {state, action, new_state, reward, terminated}")
-    #     if terminated:
-    #         state = 0
-    #     else:
-    #         state = new_state
     
     # run mcts trials
-    update_method = "avg"
+    update_method = ""
+    # hparam_ucb_scale_ary = [7, 8, 10, 15, 20]
+    # for hparam_ucb_scale in hparam_ucb_scale_ary:
+    #     print(f"\n-> hparam_ucb_scale = {hparam_ucb_scale}")
+    #     run_mcts_trials(
+    #         env, simulator, num_trial_episodes, ep_max_steps, gamma, action_multi,
+    #         mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
+    #         hparam_ucb_scale, hparam_haver_var, update_method)
+
+    hparam_ucb_scale = 15
+    
     run_mcts_trials(
         env, simulator, num_trial_episodes, ep_max_steps, gamma, action_multi,
         mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
         hparam_ucb_scale, hparam_haver_var, update_method)
-    
 
 def run_mcts_trials(
         env, simulator, num_trial_episodes, ep_max_steps, gamma, action_multi,
@@ -82,7 +80,7 @@ def run_mcts_trials(
         random.seed(1000+i_ep)
         # state = f"{state}"
 
-        mcts = MCTS(simulator, num_actions, gamma, action_multi,
+        mcts = MCTS(simulator, gamma, action_multi,
                     mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
                     hparam_ucb_scale, hparam_haver_var, update_method)
 
@@ -104,7 +102,7 @@ def run_mcts_trials(
         end_time = time.time()
         all_ep_reward += ep_reward
         if (i_ep+1) % 10 == 0:
-            print(f"ep={i_ep+1}, avg_reward = {all_ep_reward/(i_ep+1):0.4f}, run_time={(end_time-start_time)/(i_ep+1):0.4f}")
+            print(f"ep={i_ep+1}, reward={ep_reward:0.4f}, avg_reward = {all_ep_reward/(i_ep+1):0.4f}, run_time={(end_time-start_time)/(i_ep+1):0.4f}")
         
     print(f"avg_reward = {all_ep_reward/num_trial_episodes:0.4f}")
 

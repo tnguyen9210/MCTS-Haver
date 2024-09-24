@@ -73,12 +73,12 @@ class FrozenLakeCustom(FrozenLakeEnv):
             newstate = to_s(newrow, newcol)
             newletter = desc[newrow, newcol]
             terminated = bytes(newletter) in b"GH"
-            reward = float(newletter == b"G")
-            # reward = -1
-            # if newletter == b"G":
-            #     reward = 1
-            # elif newletter == b"H":
-            #     reward = -100
+            # reward = float(newletter == b"G")
+            reward = -1
+            if newletter == b"G":
+                reward = 1
+            elif newletter == b"H":
+                reward = -100
             return newstate, reward, terminated
 
         for row in range(nrow):
@@ -91,10 +91,15 @@ class FrozenLakeCustom(FrozenLakeEnv):
                         li.append((1.0, s, 0, True))
                     else:
                         if is_slippery:
-                            for b in [(a - 1) % 4, a, (a + 1) % 4]:
+                            li.append((0.8, *update_probability_matrix(row, col, a)))
+                            for b in [(a - 1) % 4, (a + 1) % 4]:
                                 li.append(
-                                    (1.0 / 3.0, *update_probability_matrix(row, col, b))
+                                    (0.1, *update_probability_matrix(row, col, b))
                                 )
+                            # for b in [(a - 1) % 4, a, (a + 1) % 4]:
+                            #     li.append(
+                            #         (1.0 / 3.0, *update_probability_matrix(row, col, b))
+                            #     )
                         else:
                             li.append((1.0, *update_probability_matrix(row, col, a)))
 
@@ -120,9 +125,10 @@ class FrozenLakeCustom(FrozenLakeEnv):
     
 
 class FrozenLakeSimulator:
-    def __init__(self, trans_probs, num_actions):
+    def __init__(self, trans_probs):
         self.trans_probs = trans_probs
-        self.num_actions = num_actions
+        self.num_states = len(trans_probs)
+        self.num_actions = len(trans_probs[0])
 
     def step(self, state, action):
         transitions = self.trans_probs[int(state)][action]

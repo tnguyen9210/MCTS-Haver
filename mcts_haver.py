@@ -14,12 +14,14 @@ import logging
 
 
 class MCTS:
-    def __init__(self, simulator, num_actions, gamma, action_multi,
+    def __init__(self, simulator, gamma, action_multi,
                  max_iterations, max_depth, rollout_max_depth,
-                 hparam_ucb_scale, hparam_haver_var, update_method):
+                 hparam_ucb_scale, hparam_haver_var, update_method,
+                 rollout_method, rollout_Q):
+        
         self.simulator = simulator
-        self.action_multi = action_multi
-        self.num_actions = num_actions*action_multi
+        self.num_actions = simulator.num_actions
+        # self.action_multi = action_multi
         self.gamma = gamma
         self.max_iterations = max_iterations
         self.max_depth = max_depth
@@ -29,11 +31,14 @@ class MCTS:
 
         self.update_method = update_method
         
-        self.Q = defaultdict(lambda: np.zeros(num_actions))
-        self.N = defaultdict(lambda: np.zeros(num_actions))
-        self.QH = defaultdict(lambda: np.ones(num_actions))  # Q-table for Haver
-        self.R = defaultdict(lambda: np.ones(num_actions))  # Q-table for avg reward
+        self.Q = defaultdict(lambda: np.zeros(self.num_actions))
+        self.N = defaultdict(lambda: np.zeros(self.num_actions))
+        self.QH = defaultdict(lambda: np.ones(self.num_actions))  # Q-table for Haver
+        self.R = defaultdict(lambda: np.ones(self.num_actions))  # Q-table for avg reward
 
+        self.rollout_method = rollout_method
+        self.rollout_Q = rollout_Q
+        
         logging.debug(f"\n-> init")
         logging.debug(f"num_actions={self.num_actions}")
         logging.debug(f"max_iterations={self.max_iterations}")
@@ -160,7 +165,11 @@ class MCTS:
         total_reward = 0
         for i_depth in range(self.rollout_max_depth):
             # logging.info(f"i_depth={i_depth}")
-            action = np.random.choice(range(self.num_actions))
+            if self.rollout_method == "vit":
+                action = np.argmax(self.rollout_Q[cur_state])
+                # logging.warning(f"cur_state={cur_state}, action={action}")
+            else:
+                action = np.random.choice(range(self.num_actions))
             # action = action % self.action_multi
             # logging.info(f"action={action}")
             next_state, reward, terminated, _, _ = \
