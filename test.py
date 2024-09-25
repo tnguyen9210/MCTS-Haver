@@ -4,6 +4,11 @@ import numpy as np
 import gym
 from env import FrozenLakeCustom, FrozenLakeSimulator
 
+from config import parse_args
+
+args = parse_args()
+print(args)
+stop
 
 env_id = "FrozenLake-v1"
 env = FrozenLakeCustom(map_name="4x4", is_slippery=True, render_mode=None)

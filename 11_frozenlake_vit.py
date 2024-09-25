@@ -31,7 +31,7 @@ def main():
     threshold = 0.00001
 
     # create gym env
-    env = FrozenLakeCustom(map_name="4x4", is_slippery=True, render_mode=None)
+    env = FrozenLakeCustom(map_name="4x4", is_slippery=False, render_mode=None)
     simulator = FrozenLakeSimulator(env.P)
     
     num_states = env.observation_space.n
@@ -44,6 +44,13 @@ def main():
 
     # run value iteration
     V_table, Q_table = value_iteration(simulator, num_actions, num_states, gamma, threshold)
+
+    for state in range(num_states):
+        print(f"\n-> state = {state}")
+        print(f"V[state] = {V_table[state]:0.4f}")
+        for action in range(num_actions):
+            print(f"Q[state][action] = {Q_table[state][action]:0.4f}")
+        print(f"best_action={np.argmax(Q_table[state])}")
 
     # evaluate
     ep_reward_ary = evaluate(env, Q_table, num_episodes_eval, ep_max_steps)

@@ -6,7 +6,10 @@ np.set_printoptions(precision=4, suppress=True)
 import copy 
 
 
-def value_iteration(simulator, num_actions, num_states, gamma, threshold):
+def value_iteration(simulator, gamma, threshold):
+    num_states = simulator.num_states
+    num_actions = simulator.num_actions
+    
     V = defaultdict(float)
     Q = defaultdict(lambda: np.zeros(num_actions))
     

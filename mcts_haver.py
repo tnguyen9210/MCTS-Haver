@@ -14,29 +14,26 @@ import logging
 
 
 class MCTS:
-    def __init__(self, simulator, gamma, action_multi,
-                 max_iterations, max_depth, rollout_max_depth,
-                 hparam_ucb_scale, hparam_haver_var, update_method,
-                 rollout_method, rollout_Q):
+    def __init__(self, simulator, rollout_Q, args):
         
         self.simulator = simulator
         self.num_actions = simulator.num_actions
         # self.action_multi = action_multi
-        self.gamma = gamma
-        self.max_iterations = max_iterations
-        self.max_depth = max_depth
-        self.rollout_max_depth = rollout_max_depth
-        self.hparam_ucb_scale = hparam_ucb_scale
-        self.hparam_haver_var = hparam_haver_var
+        self.gamma = args["gamma"]
+        self.max_iterations = args["mcts_max_iterations"]
+        self.max_depth = args["mcts_max_depth"]
+        self.rollout_max_depth = args["mcts_rollout_max_depth"]
+        self.hparam_ucb_scale = args["hparam_ucb_scale"]
+        self.hparam_haver_var = args["hparam_haver_var"]
 
-        self.update_method = update_method
+        self.update_method = args["update_method"]
         
         self.Q = defaultdict(lambda: np.zeros(self.num_actions))
         self.N = defaultdict(lambda: np.zeros(self.num_actions))
-        self.QH = defaultdict(lambda: np.ones(self.num_actions))  # Q-table for Haver
-        self.R = defaultdict(lambda: np.ones(self.num_actions))  # Q-table for avg reward
+        self.QH = defaultdict(lambda: -np.inf*np.ones(self.num_actions))  # Q-table for Haver
+        self.R = defaultdict(lambda: np.zeros(self.num_actions))  # Q-table for avg reward
 
-        self.rollout_method = rollout_method
+        self.rollout_method = args["rollout_method"]
         self.rollout_Q = rollout_Q
         
         logging.debug(f"\n-> init")
@@ -50,15 +47,21 @@ class MCTS:
         for it in range(self.max_iterations):
             logging.info(f"\n\n-> it={it}")
             self.search(cur_state, 0, False, debug=False)
+            # for a in range(self.num_actions):
+            #     if self.QH[cur_state][a] == 1:
+            #         stop
 
-        action = np.argmax(self.Q[cur_state])
+        if self.update_method == "haver" and np.sum(self.QH[cur_state][self.QH[cur_state] > -np.inf]) > 0:
+            action = np.argmax(self.QH[cur_state])
+        else:
+            action = np.argmax(self.Q[cur_state])
         # action = self.get_action_max_ucb(cur_state, debug=True)
         # action = action % self.action_multi
         return action
     
     def search(self, cur_state, depth, terminated, debug):
-        logging.info(f"\n-> search")
-        logging.info(f"cur_state={cur_state}, depth={depth}, terminated={terminated}")
+        # logging.debug(f"\n-> search")
+        # logging.debug(f"cur_state={cur_state}, depth={depth}, terminated={terminated}")
         
         if terminated:
             return 0
@@ -71,15 +74,15 @@ class MCTS:
             logging.info(f"case: depth <= max_depth")
             action = self.select_action(cur_state, depth, debug)
             # action = action % self.action_multi
-            logging.info(f"action={action}")
+            logging.debug(f"action={action}")
             
             next_state, reward, terminated, _, _ = \
                 self.simulator.step(cur_state, action)
             
             q = reward + self.gamma*self.search(next_state, depth+1, terminated, debug)
 
-            logging.info(f"after search")
-            logging.info(f"cur_state={cur_state}, action={action}, next_state={next_state}, reward={reward}")    
+            # logging.debug(f"after search")
+            # logging.debug(f"cur_state={cur_state}, action={action}, next_state={next_state}, reward={reward}")    
 
             self.N[cur_state][action] += 1
             # total_nvisits = np.sum(self.N[cur_state])
@@ -87,13 +90,21 @@ class MCTS:
             w = 1/self.N[cur_state][action]            
             self.Q[cur_state][action] = \
                   (1-w)*self.Q[cur_state][action] + w*q
+            # logging.debug(f"Q[cur_state][action] = {self.Q[cur_state][action]:0.4f}")    
 
             self.R[cur_state][action] = (1-w)*self.R[cur_state][action] + w*reward
 
             if depth == 0:
-                self.QH[cur_state][action] = \
-                    self.R[cur_state][action] + haver21count(
-                        self.Q[cur_state], self.N[cur_state], self.hparam_haver_var, debug)
+                if np.sum(self.N[next_state]) > 0:
+                    self.QH[cur_state][action] = \
+                        self.R[cur_state][action] + haver21count(
+                            self.Q[next_state], self.N[next_state], self.hparam_haver_var, debug)
+                    # print(self.QH[cur_state][action])
+                    
+                # for a in range(self.num_actions):
+                #     self.QH[cur_state][a] = \
+                #         self.R[cur_state][a] + haver21count(
+                #             self.Q[next_state], self.N[next_state], self.hparam_haver_var, debug)
                         
             return q
 
@@ -115,6 +126,7 @@ class MCTS:
                 action_values = self.QH[cur_state]
             else:
                 action_values = self.Q[cur_state]
+            action_values = self.Q[cur_state]
 
             action_nvisits = self.N[cur_state]
             action = self.get_action_max_ucb(action_values, action_nvisits, debug)
@@ -187,6 +199,7 @@ class MCTS:
 
     
 def haver21count(action_values, action_nvisits, hparam_haver_var, debug=False):
+    
     num_actions = len(action_values)  
     num_actions_visited = np.sum(action_nvisits > 0)
     total_nvisits = np.sum(action_nvisits)
@@ -226,6 +239,9 @@ def haver21count(action_values, action_nvisits, hparam_haver_var, debug=False):
         logging.warn(f"Bset_muhats = {Bset_muhats}")
         # loging.warn(tmp)
         logging.warn(f"haver_est = {haver_est:.2f}")
+
+    # num_actions = len(action_values)  
+    # num_actions_visited = np.sum(action_nvisits > 0)
     
     # rhat_idx = None
     # rhat_gam = None
@@ -277,8 +293,94 @@ def haver21count(action_values, action_nvisits, hparam_haver_var, debug=False):
     #     logging.warn(f"Bset_muhats = {Bset_muhats}")
     #     # loging.warn(tmp)
     #     logging.warn(f"haver_est = {haver_est:.2f}")
-        
     
 
     return haver_est
     
+
+def run_mcts_trial(env, simulator, Q_table, i_trial, args):
+
+    np.random.seed(1000+i_trial)
+    random.seed(1000+i_trial)
+    state, info = env.reset(seed=1000+i_trial)
+    
+    # run trials
+    mcts = MCTS(simulator, Q_table, args)
+
+    ep_reward = 0
+    for i_step in range(args["ep_max_steps"]):
+        # logging.warn(f"\n-> i_step={i_step}")
+        action = mcts.run(state)
+        next_state, reward, terminated, truncated, info = env.step(action)
+        ep_reward += reward
+        # logging.warn(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
+        # logging.warn(f"Q[state] = {mcts.Q[state]}")
+        # logging.warn(f"QH[state] = {mcts.QH[state]}")
+
+        if terminated:
+            break
+
+        state = next_state
+
+    return mcts.Q, ep_reward
+
+
+# def run_mcts_trials(
+#         env, simulator, Q_table, argsnum_trial_episodes, ep_max_steps, gamma, action_multi,
+#         mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
+#         hparam_ucb_scale, hparam_haver_var, update_method,
+#         rollout_method, Q_table):
+
+        
+#     # run trials
+#     ep_reward_ary = []
+#     Q_table_avg = defaultdict(lambda: np.zeros(simulator.num_actions))
+#     start_time = time.time()
+#     for i_ep in range(num_trial_episodes):
+#         np.random.seed(1000+i_ep)
+#         random.seed(1000+i_ep)
+#         state, info = env.reset(seed=1000+i_ep)
+#         # state = f"{state}"
+
+#         mcts = MCTS(simulator, gamma, action_multi,
+#                     mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
+#                     hparam_ucb_scale, hparam_haver_var, update_method,
+#                     rollout_method, Q_table)
+
+#         ep_reward = 0
+#         for i_step in range(ep_max_steps):
+#             logging.warning(f"\n-> i_step={i_step}")
+#             action = mcts.run(state)
+#             next_state, reward, terminated, truncated, info = env.step(action)
+#             ep_reward += reward
+#             logging.warning(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
+#             logging.warning(f"Q[state] = {mcts.Q[state]}")
+
+#             if terminated:
+#                 break
+
+#             state = next_state
+
+#         for s in range(simulator.num_states):
+#             Q_table_avg[s] = (1-1/(i_ep+1))*Q_table_avg[s] + 1/(i_ep+1)*mcts.Q[s]
+            
+#         # logging.warning(f"i_step = {i_step}, eps_reward={ep_reward:0.2f}, {ep_reward/(i_step+1):0.2f}")
+#         # stop
+#         end_time = time.time()
+#         ep_reward_ary.append(ep_reward)
+#         if (i_ep+1) % 10 == 0:
+#             print(f"ep={i_ep+1}, reward={ep_reward:0.4f}, avg_reward = {np.sum(ep_reward_ary)/(i_ep+1):0.4f}, run_time={(end_time-start_time)/(i_ep+1):0.4f}")
+            
+#         # if ep_reward <= -5:
+#         #     break
+        
+#     print(f"avg_reward = {np.sum(ep_reward_ary)/num_trial_episodes:0.4f}")
+    
+#     for state in range(simulator.num_states):
+#         print(f"\n-> state = {state}")
+#         print(f"V[state] = {np.max(Q_table_avg[state]):0.4f}")
+#         for action in range(simulator.num_actions):
+#             print(f"Q[state][action] = {Q_table_avg[state][action]:0.4f}")
+#         print(f"best_action={np.argmax(Q_table_avg[state])}")
+
+#     return 
