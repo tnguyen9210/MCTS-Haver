@@ -28,7 +28,7 @@ random.seed(0)
 
 # params
 args = parse_args()
-args["update_method"] = "haver"
+args["update_method"] = "avg"
 args["rollout_method"] = ""
 
 #

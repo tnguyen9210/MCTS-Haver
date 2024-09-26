@@ -12,6 +12,7 @@ from collections import defaultdict
 import logging
 # logging.basicConfig(level=logging.INFO)
 
+import ipdb
 
 class MCTS:
     def __init__(self, simulator, rollout_Q, args):
@@ -28,10 +29,7 @@ class MCTS:
 
         self.update_method = args["update_method"]
         
-        self.Q = defaultdict(lambda: np.zeros(self.num_actions))
-        self.N = defaultdict(lambda: np.zeros(self.num_actions))
-        self.QH = defaultdict(lambda: -np.inf*np.ones(self.num_actions))  # Q-table for Haver
-        self.R = defaultdict(lambda: np.zeros(self.num_actions))  # Q-table for avg reward
+        
 
         self.rollout_method = args["rollout_method"]
         self.rollout_Q = rollout_Q
@@ -44,8 +42,14 @@ class MCTS:
 
     def run(self, cur_state):
         # cur_node = Node()
+        self.Q = defaultdict(lambda: np.zeros(self.num_actions))
+        self.N = defaultdict(lambda: np.zeros(self.num_actions))
+        self.QH = defaultdict(lambda: -np.inf*np.ones(self.num_actions))  # Q-table for Haver
+        self.R = defaultdict(lambda: np.zeros(self.num_actions))  # Q-table for avg reward
         for it in range(self.max_iterations):
             logging.info(f"\n\n-> it={it}")
+            # if it == self.max_iterations -1:
+            #     ipdb.set_trace()
             self.search(cur_state, 0, False, debug=False)
             # for a in range(self.num_actions):
             #     if self.QH[cur_state][a] == 1:
@@ -60,8 +64,8 @@ class MCTS:
         return action
     
     def search(self, cur_state, depth, terminated, debug):
-        # logging.debug(f"\n-> search")
-        # logging.debug(f"cur_state={cur_state}, depth={depth}, terminated={terminated}")
+        # logging.warn(f"\n-> search")
+        # logging.warn(f"cur_state={cur_state}, depth={depth}, terminated={terminated}")
         
         if terminated:
             return 0
@@ -74,15 +78,15 @@ class MCTS:
             logging.info(f"case: depth <= max_depth")
             action = self.select_action(cur_state, depth, debug)
             # action = action % self.action_multi
-            logging.debug(f"action={action}")
+            # logging.debug(f"action={action}")
             
             next_state, reward, terminated, _, _ = \
                 self.simulator.step(cur_state, action)
             
             q = reward + self.gamma*self.search(next_state, depth+1, terminated, debug)
 
-            # logging.debug(f"after search")
-            # logging.debug(f"cur_state={cur_state}, action={action}, next_state={next_state}, reward={reward}")    
+            # logging.warn(f"after search")
+            # logging.warn(f"cur_state={cur_state}, action={action}, next_state={next_state}, reward={reward}")    
 
             self.N[cur_state][action] += 1
             # total_nvisits = np.sum(self.N[cur_state])
@@ -90,17 +94,22 @@ class MCTS:
             w = 1/self.N[cur_state][action]            
             self.Q[cur_state][action] = \
                   (1-w)*self.Q[cur_state][action] + w*q
-            # logging.debug(f"Q[cur_state][action] = {self.Q[cur_state][action]:0.4f}")    
+            # logging.warn(f"Q[cur_state][action] = {self.Q[cur_state][action]:0.4f}")    
 
             self.R[cur_state][action] = (1-w)*self.R[cur_state][action] + w*reward
 
             if depth == 0:
-                if np.sum(self.N[next_state]) > 0:
+                # logging.warn(f"\n-> search, cur_state={cur_state}, action={action}, {self.N[next_state]}")
+                # pdb.set_trace()
+                if terminated:
+                    self.QH[cur_state][action] = \
+                        self.R[cur_state][action]
+                elif np.sum(self.N[next_state]) > 0: # TODO: if next_state is terminal, then this will never be entered.
                     self.QH[cur_state][action] = \
                         self.R[cur_state][action] + haver21count(
                             self.Q[next_state], self.N[next_state], self.hparam_haver_var, debug)
                     # print(self.QH[cur_state][action])
-                    
+                # logging.warn(f"QH[cur_state][action]= {self.QH[cur_state][action]}")
                 # for a in range(self.num_actions):
                 #     self.QH[cur_state][a] = \
                 #         self.R[cur_state][a] + haver21count(
@@ -108,30 +117,72 @@ class MCTS:
                         
             return q
 
-        
     def select_action(self, cur_state, depth, debug=False):
+        if self.update_method == "haver" and depth == 0:
+            # find unvisited_actions
+            unvisited_actions = []
+            for action in range(self.num_actions):
+                if self.QH[cur_state][action] == -np.inf:
+                    unvisited_actions.append(action)
+            logging.debug(f"unvisited_actions={unvisited_actions}")
+
+            if len(unvisited_actions) != 0:  # some nodes are not visited
+                # choose a random action 
+                # ipdb.set_trace()
+                action = np.random.choice(unvisited_actions)
+            else:
+                action_values = self.QH[cur_state]
+                action_nvisits = self.N[cur_state]
+                action = self.get_action_max_ucb(action_values, action_nvisits, debug)
+            return action 
+        
         # find unvisited_actions
         unvisited_actions = []
         for action in range(self.num_actions):
             if self.N[cur_state][action] == 0:
                 unvisited_actions.append(action)
         logging.debug(f"unvisited_actions={unvisited_actions}")
-                
+
+        
         if len(unvisited_actions) != 0:  # some nodes are not visited
             # choose a random action 
             action = np.random.choice(unvisited_actions)
         elif len(unvisited_actions) == 0:
             # choose an action that maximizes ucb
-            if self.update_method == "haver" and depth == 0:
-                action_values = self.QH[cur_state]
-            else:
-                action_values = self.Q[cur_state]
             action_values = self.Q[cur_state]
 
             action_nvisits = self.N[cur_state]
             action = self.get_action_max_ucb(action_values, action_nvisits, debug)
 
         return action
+        
+    # def select_action(self, cur_state, depth, debug=False):
+    #     # find unvisited_actions
+    #     unvisited_actions = []
+    #     for action in range(self.num_actions):
+    #         if self.N[cur_state][action] == 0:
+    #             unvisited_actions.append(action)
+    #     logging.debug(f"unvisited_actions={unvisited_actions}")
+
+        
+    #     if len(unvisited_actions) != 0:  # some nodes are not visited
+    #         # choose a random action 
+    #         action = np.random.choice(unvisited_actions)
+    #     elif len(unvisited_actions) == 0:
+    #         # choose an action that maximizes ucb
+    #         if self.update_method == "haver" and depth == 0:
+    #             idx_sane = self.QH[cur_state] != -np.inf
+    #             action_values = self.Q[cur_state].copy()
+    #             action_values[idx_sane] = self.QH[cur_state][idx_sane]
+    #             # action_values = self.QH[cur_state]
+    #         else:
+    #             action_values = self.Q[cur_state]
+    #         # action_values = self.Q[cur_state]
+
+    #         action_nvisits = self.N[cur_state]
+    #         action = self.get_action_max_ucb(action_values, action_nvisits, debug)
+
+    #     return action
 
     
     def get_action_max_ucb(self, action_values, action_nvisits, debug=False):
@@ -309,13 +360,13 @@ def run_mcts_trial(env, simulator, Q_table, i_trial, args):
 
     ep_reward = 0
     for i_step in range(args["ep_max_steps"]):
-        # logging.warn(f"\n-> i_step={i_step}")
+        logging.warn(f"\n-> i_step={i_step}")
         action = mcts.run(state)
         next_state, reward, terminated, truncated, info = env.step(action)
         ep_reward += reward
-        # logging.warn(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
-        # logging.warn(f"Q[state] = {mcts.Q[state]}")
-        # logging.warn(f"QH[state] = {mcts.QH[state]}")
+        logging.warn(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
+        logging.warn(f"Q[state] = {mcts.Q[state]}")
+        logging.warn(f"QH[state] = {mcts.QH[state]}")
 
         if terminated:
             break

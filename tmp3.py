@@ -28,8 +28,8 @@ random.seed(0)
 
 # params
 args = parse_args()
-args["update_method"] = "haver"
-args["rollout_method"] = ""
+args["update_method"] = "avg"
+args["rollout_method"] = "vit"
 
 #
 env_id = "FrozenLake-v1"
