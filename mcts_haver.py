@@ -29,8 +29,6 @@ class MCTS:
 
         self.update_method = args["update_method"]
         
-        
-
         self.rollout_method = args["rollout_method"]
         self.rollout_Q = rollout_Q
         
@@ -44,19 +42,26 @@ class MCTS:
         # cur_node = Node()
         self.Q = defaultdict(lambda: np.zeros(self.num_actions))
         self.N = defaultdict(lambda: np.zeros(self.num_actions))
+        self.NH = defaultdict(lambda: np.zeros(self.num_actions))
         self.QH = defaultdict(lambda: -np.inf*np.ones(self.num_actions))  # Q-table for Haver
+        self.QM = defaultdict(lambda: -np.inf*np.ones(self.num_actions))  # Q-table for Haver
         self.R = defaultdict(lambda: np.zeros(self.num_actions))  # Q-table for avg reward
-        for it in range(self.max_iterations):
-            logging.info(f"\n\n-> it={it}")
-            # if it == self.max_iterations -1:
-            #     ipdb.set_trace()
-            self.search(cur_state, 0, False, debug=False)
-            # for a in range(self.num_actions):
-            #     if self.QH[cur_state][a] == 1:
-            #         stop
 
-        if self.update_method == "haver" and np.sum(self.QH[cur_state][self.QH[cur_state] > -np.inf]) > 0:
+        self.Q2 = defaultdict(lambda: np.zeros(self.num_actions))
+        self.var = defaultdict(lambda: np.zeros(self.num_actions))
+        
+        # ipdb.set_trace()
+        
+        for it in range(self.max_iterations):
+            # ipdb.set_trace()
+            logging.info(f"\n\n-> it={it}")
+            self.search(cur_state, 0, False, debug=False)
+
+        if self.update_method == "haver":
             action = np.argmax(self.QH[cur_state])
+            logging.warn(f"action={action}")
+        elif self.update_method == "max":
+            action = np.argmax(self.QM[cur_state])
         else:
             action = np.argmax(self.Q[cur_state])
         # action = self.get_action_max_ucb(cur_state, debug=True)
@@ -64,52 +69,81 @@ class MCTS:
         return action
     
     def search(self, cur_state, depth, terminated, debug):
-        # logging.warn(f"\n-> search")
-        # logging.warn(f"cur_state={cur_state}, depth={depth}, terminated={terminated}")
+        logging.debug(f"\n-> search")
+        logging.debug(f"cur_state={cur_state}, depth={depth}, terminated={terminated}")
         
         if terminated:
             return 0
         
         if depth > self.max_depth:
-            logging.info(f"case: depth > max_depth")
+            logging.debug(f"case: depth > max_depth")
             return self.rollout(cur_state)
         
         elif depth <= self.max_depth:
-            logging.info(f"case: depth <= max_depth")
+            logging.debug(f"case: depth <= max_depth")
             action = self.select_action(cur_state, depth, debug)
             # action = action % self.action_multi
-            # logging.debug(f"action={action}")
+            logging.debug(f"action={action}")
             
             next_state, reward, terminated, _, _ = \
                 self.simulator.step(cur_state, action)
             
             q = reward + self.gamma*self.search(next_state, depth+1, terminated, debug)
 
-            # logging.warn(f"after search")
-            # logging.warn(f"cur_state={cur_state}, action={action}, next_state={next_state}, reward={reward}")    
+            logging.debug(f"after search")
+            logging.debug(f"cur_state={cur_state}, action={action}, next_state={next_state}, reward={reward}")    
 
             self.N[cur_state][action] += 1
-            # total_nvisits = np.sum(self.N[cur_state])
             
             w = 1/self.N[cur_state][action]            
             self.Q[cur_state][action] = \
                   (1-w)*self.Q[cur_state][action] + w*q
-            # logging.warn(f"Q[cur_state][action] = {self.Q[cur_state][action]:0.4f}")    
+            logging.debug(f"Q[cur_state][action] = {self.Q[cur_state][action]:0.4f}")    
 
             self.R[cur_state][action] = (1-w)*self.R[cur_state][action] + w*reward
 
+            self.Q2[cur_state][action] = \
+                  (1-w)*self.Q[cur_state][action] + w*q**2
+            
+            self.var[cur_state][action] =  self.Q2[cur_state][action] - self.Q[cur_state][action]**2
+
             if depth == 0:
-                # logging.warn(f"\n-> search, cur_state={cur_state}, action={action}, {self.N[next_state]}")
+                logging.info(f"\n-> depth-0, cur_state={cur_state}, action={action}, {self.N[next_state]}")
                 # pdb.set_trace()
+                # ipdb.set_trace()
+                
                 if terminated:
-                    self.QH[cur_state][action] = \
-                        self.R[cur_state][action]
-                elif np.sum(self.N[next_state]) > 0: # TODO: if next_state is terminal, then this will never be entered.
-                    self.QH[cur_state][action] = \
-                        self.R[cur_state][action] + haver21count(
-                            self.Q[next_state], self.N[next_state], self.hparam_haver_var, debug)
-                    # print(self.QH[cur_state][action])
-                # logging.warn(f"QH[cur_state][action]= {self.QH[cur_state][action]}")
+                    self.QH[cur_state][action] = self.R[cur_state][action]
+                    self.QM[cur_state][action] = self.R[cur_state][action]
+                        
+                elif np.sum(self.N[next_state]) > 0:
+                    if self.update_method == "haver":
+                        self.QH[cur_state][action] = \
+                            self.R[cur_state][action] + haver21count(
+                                self.Q[next_state], self.N[next_state],
+                                self.var[next_state],
+                                self.hparam_haver_var, debug)
+                        logging.info(f"QH[cur_state]= {self.QH[cur_state]}")
+                        logging.info(f"QH[cur_state][action]= {self.QH[cur_state][action]}")
+
+                    elif self.update_method == "max":
+                        self.QM[cur_state][action] = \
+                            self.R[cur_state][action] + np.max(
+                                self.Q[next_state][self.N[next_state] > 0])
+
+                        # self.QH[cur_state][action] = \
+                        #     self.R[cur_state][action] + haver21count(
+                        #         self.Q[next_state], self.N[next_state],
+                        #         self.hparam_haver_var, debug)
+
+                        # if np.any(self.QM[cur_state][action] != self.QH[cur_state][action]):
+                        #     ipdb.set_trace()
+                            
+                        logging.info(f"QM[cur_state][action]= {self.QM[cur_state][action]}")
+                        logging.info(f"QH[cur_state][action]= {self.QH[cur_state][action]}")
+
+                        a = 0
+                # ipdb.set_trace()
                 # for a in range(self.num_actions):
                 #     self.QH[cur_state][a] = \
                 #         self.R[cur_state][a] + haver21count(
@@ -118,13 +152,21 @@ class MCTS:
             return q
 
     def select_action(self, cur_state, depth, debug=False):
+        logging.debug(f"\n-> select_action")
         if self.update_method == "haver" and depth == 0:
             # find unvisited_actions
             unvisited_actions = []
             for action in range(self.num_actions):
-                if self.QH[cur_state][action] == -np.inf:
+                next_state, _, terminated, _, _ = self.simulator.step(cur_state, action)
+                # logging.debug(f"action={action}, next_state={next_state}")
+                if terminated:
+                    if self.QH[cur_state][action] == -np.inf:
+                        unvisited_actions.append(action)
+                elif self.QH[cur_state][action] == -np.inf or np.sum(self.N[next_state] == 0) > 0:
                     unvisited_actions.append(action)
-            logging.debug(f"unvisited_actions={unvisited_actions}")
+                # if self.QH[cur_state][action] == -np.inf:
+                #     unvisited_actions.append(action)
+            logging.info(f"unvisited_actions={unvisited_actions}")
 
             if len(unvisited_actions) != 0:  # some nodes are not visited
                 # choose a random action 
@@ -134,25 +176,55 @@ class MCTS:
                 action_values = self.QH[cur_state]
                 action_nvisits = self.N[cur_state]
                 action = self.get_action_max_ucb(action_values, action_nvisits, debug)
-            return action 
-        
-        # find unvisited_actions
-        unvisited_actions = []
-        for action in range(self.num_actions):
-            if self.N[cur_state][action] == 0:
-                unvisited_actions.append(action)
-        logging.debug(f"unvisited_actions={unvisited_actions}")
 
-        
-        if len(unvisited_actions) != 0:  # some nodes are not visited
-            # choose a random action 
-            action = np.random.choice(unvisited_actions)
-        elif len(unvisited_actions) == 0:
-            # choose an action that maximizes ucb
-            action_values = self.Q[cur_state]
+        elif self.update_method == "max" and depth == 0:
+            # find unvisited_actions
+            unvisited_actions = []
+            for action in range(self.num_actions):
+                next_state, _, terminated, _, _ = self.simulator.step(cur_state, action)
+                # logging.debug(f"action={action}, next_state={next_state}")
+                if terminated:
+                    if self.QM[cur_state][action] == -np.inf:
+                        unvisited_actions.append(action)
+                elif self.QM[cur_state][action] == -np.inf or np.sum(self.N[next_state] == 0) > 0:
+                    unvisited_actions.append(action)
+                # if self.QH[cur_state][action] == -np.inf:
+                #     unvisited_actions.append(action)
+            logging.info(f"unvisited_actions={unvisited_actions}")
 
-            action_nvisits = self.N[cur_state]
-            action = self.get_action_max_ucb(action_values, action_nvisits, debug)
+            if len(unvisited_actions) != 0:  # some nodes are not visited
+                # choose a random action 
+                # ipdb.set_trace()
+                action = np.random.choice(unvisited_actions)
+            else:
+                action_values = self.QH[cur_state]
+                action_nvisits = self.N[cur_state]
+                action = self.get_action_max_ucb(action_values, action_nvisits, debug)
+
+                
+        else:
+            # find unvisited_actions
+            unvisited_actions = []
+            for action in range(self.num_actions):
+                next_state, _, terminated, _, _ = self.simulator.step(cur_state, action)
+                # logging.debug(f"action={action}, next_state={next_state}")
+                if terminated:
+                    if self.N[cur_state][action] == 0:
+                        unvisited_actions.append(action)
+                elif self.N[cur_state][action] == 0 or np.sum(self.N[next_state] == 0) > 0:
+                    unvisited_actions.append(action)
+            logging.info(f"unvisited_actions={unvisited_actions}")
+
+
+            if len(unvisited_actions) != 0:  # some nodes are not visited
+                # choose a random action 
+                action = np.random.choice(unvisited_actions)
+            elif len(unvisited_actions) == 0:
+                # choose an action that maximizes ucb
+                action_values = self.Q[cur_state]
+
+                action_nvisits = self.N[cur_state]
+                action = self.get_action_max_ucb(action_values, action_nvisits, debug)
 
         return action
         
@@ -249,88 +321,33 @@ class MCTS:
         return total_reward
 
     
-def haver21count(action_values, action_nvisits, hparam_haver_var, debug=False):
+def haver21count(action_values, action_nvisits, action_vars, hparam_haver_var, debug=False):
     
-    num_actions = len(action_values)  
-    num_actions_visited = np.sum(action_nvisits > 0)
-    total_nvisits = np.sum(action_nvisits)
-
-    visited_idxes = action_nvisits != 0
-
-    # compute rhat
-    gam_log = np.zeros(num_actions)
-    action_gams = np.inf*np.ones(num_actions)
-    gam_log[visited_idxes] = \
-        (num_actions_visited*total_nvisits/action_nvisits[visited_idxes])**4
-    action_gams[visited_idxes] = \
-        hparam_haver_var*np.sqrt(18/action_nvisits[visited_idxes]*np.log(gam_log[visited_idxes]))
-    action_lcbs = action_values - action_gams
-    rhat_idx = np.argmax(action_lcbs)
-    rhat_gam = action_gams[rhat_idx]
-    max_lcb = action_lcbs[rhat_idx]
-
-    Bset_muhats = np.zeros(num_actions)
-    Bset_nvisits = np.zeros(num_actions)
-
-    Bset_conds = visited_idxes & (action_values >= max_lcb) & (action_gams <= 3.0/2*rhat_gam)
-    Bset_muhats[Bset_conds] = action_values[Bset_conds]
-    Bset_nvisits[Bset_conds] = action_nvisits[Bset_conds]
-    
-    Bset_probs = Bset_nvisits/np.sum(Bset_nvisits)
-    haver_est = np.dot(Bset_muhats, Bset_probs)
-
-    if debug:
-        logging.warn(f"action.nvisits = {action_nvisits}")
-        logging.warn(f"action_values = {action_values}")
-        logging.warn(f"max_lcb = {max_lcb:0.4f}")
-        # logging.warn(f"Bset_idxes = {Bset_idxes}")
-        logging.warn(f"Bset_conds = {Bset_conds}")
-        logging.warn(f"Bset_nvisits = {Bset_nvisits}")
-        logging.warn(f"Bset_probs = {Bset_probs}")
-        logging.warn(f"Bset_muhats = {Bset_muhats}")
-        # loging.warn(tmp)
-        logging.warn(f"haver_est = {haver_est:.2f}")
-
     # num_actions = len(action_values)  
     # num_actions_visited = np.sum(action_nvisits > 0)
-    
-    # rhat_idx = None
-    # rhat_gam = None
-    # rhat_muhat = None
-    # max_lcb = -np.inf
     # total_nvisits = np.sum(action_nvisits)
-    # num_actions_visited = np.sum(action_nvisits > 0)
-    # for a in range(num_actions):
-    #     a_nvisits = action_nvisits[a]
-    #     a_value = action_values[a]
-    #     if a_nvisits != 0:
-    #         gam_log = (num_actions_visited*total_nvisits/a_nvisits)**4
-    #         a_gam = hparam_haver_var*np.sqrt(18/a_nvisits*np.log(gam_log))
-    #         a_lcb = a_value - a_gam
-    #         if a_lcb > max_lcb:
-    #             max_lcb = a_lcb
-    #             rhat_idx = a
-    #             rhat_gam = a_gam
-    #             # rhat_muhat = child.q_value
 
-    # # print(max_lcb)
-    # Bset_idxes = []
+    # visited_idxes = action_nvisits != 0
+
+    # # compute rhat
+    # gam_log = np.zeros(num_actions)
+    # action_gams = np.inf*np.ones(num_actions)
+    # gam_log[visited_idxes] = \
+    #     (num_actions_visited*total_nvisits/action_nvisits[visited_idxes])**4
+    # action_gams[visited_idxes] = \
+    #     hparam_haver_var*np.sqrt(18/action_nvisits[visited_idxes]*np.log(gam_log[visited_idxes]))
+    # action_lcbs = action_values - action_gams
+    # rhat_idx = np.argmax(action_lcbs)
+    # rhat_gam = action_gams[rhat_idx]
+    # max_lcb = action_lcbs[rhat_idx]
+
     # Bset_muhats = np.zeros(num_actions)
     # Bset_nvisits = np.zeros(num_actions)
-    # for a in range(num_actions):
-    #     a_nvisits = action_nvisits[a]
-    #     a_value = action_values[a]
-    #     if a_nvisits != 0:
-    #         gam_log = (num_actions_visited*total_nvisits/a_nvisits)**4
-    #         a_gam = hparam_haver_var*np.sqrt(18/a_nvisits*np.log(gam_log))
-    #         # if debug:
-    #         #     logging.warn(f"rhat_gam = {rhat_gam:0.4f}")
-    #         #     logging.warn(f"child_gam = {child_gam:0.4f}")
-    #         if a_value >= max_lcb and a_gam <= 3.0/2*rhat_gam:
-    #             Bset_muhats[a] = a_value
-    #             Bset_nvisits[a] = a_nvisits
-    #             Bset_idxes.append(a)
 
+    # Bset_conds = visited_idxes & (action_values >= max_lcb) & (action_gams <= 3.0/2*rhat_gam)
+    # Bset_muhats[Bset_conds] = action_values[Bset_conds]
+    # Bset_nvisits[Bset_conds] = action_nvisits[Bset_conds]
+    
     # Bset_probs = Bset_nvisits/np.sum(Bset_nvisits)
     # haver_est = np.dot(Bset_muhats, Bset_probs)
 
@@ -339,24 +356,84 @@ def haver21count(action_values, action_nvisits, hparam_haver_var, debug=False):
     #     logging.warn(f"action_values = {action_values}")
     #     logging.warn(f"max_lcb = {max_lcb:0.4f}")
     #     # logging.warn(f"Bset_idxes = {Bset_idxes}")
+    #     logging.warn(f"Bset_conds = {Bset_conds}")
     #     logging.warn(f"Bset_nvisits = {Bset_nvisits}")
     #     logging.warn(f"Bset_probs = {Bset_probs}")
     #     logging.warn(f"Bset_muhats = {Bset_muhats}")
     #     # loging.warn(tmp)
     #     logging.warn(f"haver_est = {haver_est:.2f}")
+
+    num_actions = len(action_values)  
+    num_actions_visited = np.sum(action_nvisits > 0)
+    
+    rhat_idx = None
+    rhat_gam = None
+    rhat_muhat = None
+    max_lcb = -np.inf
+    total_nvisits = np.sum(action_nvisits)
+    num_actions_visited = np.sum(action_nvisits > 0)
+    for a in range(num_actions):
+        a_nvisits = action_nvisits[a]
+        a_value = action_values[a]
+        a_var = action_vars[a] if action_vars[a] > 0.0001 else 0.0001
+        if a_nvisits != 0:
+            gam_log = (num_actions_visited*total_nvisits/a_nvisits)**4
+            a_gam = np.sqrt(a_var)*np.sqrt(18/a_nvisits*np.log(gam_log))
+            # a_gam = hparam_haver_var*np.sqrt(18/a_nvisits*np.log(gam_log))
+            a_lcb = a_value - a_gam
+            if a_lcb > max_lcb:
+                max_lcb = a_lcb
+                rhat_idx = a
+                rhat_gam = a_gam
+                # rhat_muhat = child.q_value
+
+    # print(max_lcb)
+    Bset_idxes = []
+    Bset_muhats = np.zeros(num_actions)
+    Bset_nvisits = np.zeros(num_actions)
+    for a in range(num_actions):
+        a_nvisits = action_nvisits[a]
+        a_value = action_values[a]
+        a_var = action_vars[a] if action_vars[a] > 0.0001 else 0.0001
+        if a_nvisits != 0:
+            gam_log = (num_actions_visited*total_nvisits/a_nvisits)**4
+            a_gam = np.sqrt(a_var)*np.sqrt(18/a_nvisits*np.log(gam_log))
+            # a_gam = hparam_haver_var*np.sqrt(18/a_nvisits*np.log(gam_log))
+            # if debug:
+            #     logging.warn(f"rhat_gam = {rhat_gam:0.4f}")
+            #     logging.warn(f"child_gam = {child_gam:0.4f}")
+            if a_value >= max_lcb and a_gam <= 3.0/2*rhat_gam:
+                Bset_muhats[a] = a_value
+                Bset_nvisits[a] = a_nvisits/(a_var + 0.0001)
+                # Bset_nvisits[a] = a_nvisits
+                Bset_idxes.append(a)
+
+    Bset_probs = Bset_nvisits/np.sum(Bset_nvisits)
+    haver_est = np.dot(Bset_muhats, Bset_probs)
+
+    if debug:
+        logging.info(f"action.nvisits = {action_nvisits}")
+        logging.info(f"action_values = {action_values}")
+        logging.info(f"max_lcb = {max_lcb:0.4f}")
+        # logging.warn(f"Bset_idxes = {Bset_idxes}")
+        logging.info(f"Bset_nvisits = {Bset_nvisits}")
+        logging.info(f"Bset_probs = {Bset_probs}")
+        logging.info(f"Bset_muhats = {Bset_muhats}")
+        # loging.warn(tmp)
+        logging.info(f"haver_est = {haver_est:.2f}")
     
 
     return haver_est
     
 
-def run_mcts_trial(env, simulator, Q_table, i_trial, args):
+def run_mcts_trial(env, simulator, Q_vit, i_trial, args):
 
     np.random.seed(1000+i_trial)
     random.seed(1000+i_trial)
     state, info = env.reset(seed=1000+i_trial)
     
     # run trials
-    mcts = MCTS(simulator, Q_table, args)
+    mcts = MCTS(simulator, Q_vit, args)
 
     ep_reward = 0
     for i_step in range(args["ep_max_steps"]):
@@ -367,6 +444,8 @@ def run_mcts_trial(env, simulator, Q_table, i_trial, args):
         logging.warn(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
         logging.warn(f"Q[state] = {mcts.Q[state]}")
         logging.warn(f"QH[state] = {mcts.QH[state]}")
+        logging.warn(f"QM[state] = {mcts.QM[state]}")
+        logging.warn(f"Qvit[state] = {Q_vit[state]}")
 
         if terminated:
             break
@@ -376,62 +455,3 @@ def run_mcts_trial(env, simulator, Q_table, i_trial, args):
     return mcts.Q, ep_reward
 
 
-# def run_mcts_trials(
-#         env, simulator, Q_table, argsnum_trial_episodes, ep_max_steps, gamma, action_multi,
-#         mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
-#         hparam_ucb_scale, hparam_haver_var, update_method,
-#         rollout_method, Q_table):
-
-        
-#     # run trials
-#     ep_reward_ary = []
-#     Q_table_avg = defaultdict(lambda: np.zeros(simulator.num_actions))
-#     start_time = time.time()
-#     for i_ep in range(num_trial_episodes):
-#         np.random.seed(1000+i_ep)
-#         random.seed(1000+i_ep)
-#         state, info = env.reset(seed=1000+i_ep)
-#         # state = f"{state}"
-
-#         mcts = MCTS(simulator, gamma, action_multi,
-#                     mcts_max_iterations, mcts_max_depth, mcts_rollout_max_depth,
-#                     hparam_ucb_scale, hparam_haver_var, update_method,
-#                     rollout_method, Q_table)
-
-#         ep_reward = 0
-#         for i_step in range(ep_max_steps):
-#             logging.warning(f"\n-> i_step={i_step}")
-#             action = mcts.run(state)
-#             next_state, reward, terminated, truncated, info = env.step(action)
-#             ep_reward += reward
-#             logging.warning(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
-#             logging.warning(f"Q[state] = {mcts.Q[state]}")
-
-#             if terminated:
-#                 break
-
-#             state = next_state
-
-#         for s in range(simulator.num_states):
-#             Q_table_avg[s] = (1-1/(i_ep+1))*Q_table_avg[s] + 1/(i_ep+1)*mcts.Q[s]
-            
-#         # logging.warning(f"i_step = {i_step}, eps_reward={ep_reward:0.2f}, {ep_reward/(i_step+1):0.2f}")
-#         # stop
-#         end_time = time.time()
-#         ep_reward_ary.append(ep_reward)
-#         if (i_ep+1) % 10 == 0:
-#             print(f"ep={i_ep+1}, reward={ep_reward:0.4f}, avg_reward = {np.sum(ep_reward_ary)/(i_ep+1):0.4f}, run_time={(end_time-start_time)/(i_ep+1):0.4f}")
-            
-#         # if ep_reward <= -5:
-#         #     break
-        
-#     print(f"avg_reward = {np.sum(ep_reward_ary)/num_trial_episodes:0.4f}")
-    
-#     for state in range(simulator.num_states):
-#         print(f"\n-> state = {state}")
-#         print(f"V[state] = {np.max(Q_table_avg[state]):0.4f}")
-#         for action in range(simulator.num_actions):
-#             print(f"Q[state][action] = {Q_table_avg[state][action]:0.4f}")
-#         print(f"best_action={np.argmax(Q_table_avg[state])}")
-
-#     return 

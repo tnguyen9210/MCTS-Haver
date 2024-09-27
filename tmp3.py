@@ -51,7 +51,7 @@ V_vit, Q_vit = value_iteration(
 #     logging.warning(f"best_action={np.argmax(Q_vit[state])}")
     
 
-args["hparam_ucb_scale"] = 30.0
+args["hparam_ucb_scale"] = 32.0
 args["hparam_haver_var"] = 1.0
 
 ep_reward_ary = []

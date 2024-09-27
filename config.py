@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--update_method', type=str, default="avg")
     
     # General params
-    parser.add_argument('--num_trials', type=int, default=2)
+    parser.add_argument('--num_trials', type=int, default=20)
     parser.add_argument('--ep_max_steps', type=int, default=100)
     
     parser.add_argument('--mcts_max_iterations', type=int, default=2000)
