@@ -128,14 +128,14 @@ class MCTS:
                         
                 elif np.sum(self.N[next_state]) > 0:
                     if self.update_method == "haver":
-                        # if np.sum(self.N[next_state] <= 10) > 1:
-                        #     self.QH[cur_state][action] = copy.deepcopy(self.Q[cur_state][action])
-                        # else:
-                        self.QH[cur_state][action] = \
-                            self.R[cur_state][action] + haver21count(
-                                self.Q[next_state], self.N[next_state],
-                                self.var[next_state],
-                                self.hparam_haver_var, debug)
+                        if np.sum(self.N[next_state] <= 10) > 1:
+                            self.QH[cur_state][action] = copy.deepcopy(self.Q[cur_state][action])
+                        else:
+                            self.QH[cur_state][action] = \
+                                self.R[cur_state][action] + haver21count(
+                                    self.Q[next_state], self.N[next_state],
+                                    self.var[next_state],
+                                    self.hparam_haver_var, debug)
                         
                         logging.info(f"Q[next_state]= {self.Q[next_state]}")
                         logging.info(f"N[next_state]= {self.N[next_state]}")
@@ -236,16 +236,16 @@ class MCTS:
         action_bonuses = np.sqrt(2*np.log(total_nvisits)/action_nvisits)
         action_ucbs = action_values + action_bonuses*self.hparam_ucb_scale
 
-        # best_actions = np.where(action_ucbs == np.max(action_ucbs))[0]
-        # if len(best_actions) == 0:
-        #     print(action_values)
-        #     print(action_nvisits)
-        #     print(action_ucbs)
-        #     print(best_actions)
+        best_actions = np.where(action_ucbs == np.max(action_ucbs))[0]
+        if len(best_actions) == 0:
+            print(action_values)
+            print(action_nvisits)
+            print(action_ucbs)
+            print(best_actions)
             
-        # action = np.random.choice(best_actions)
+        action = np.random.choice(best_actions)
         # best_actions = [i if action_ucbs[i] == np.max(action_ucbs) for i in range(self.num_actions)]
-        action = np.argmax(action_ucbs)
+        # best_action = np.argmax(action_ucbs)
     
 
         # best_action = None
@@ -360,8 +360,8 @@ def haver21count(
         a_nvisits = action_nvisits[a]
         a_value = action_values[a]
         if a_nvisits != 0:
-            a_var = max(action_vars[a], hparam_haver_var/a_nvisits)
-            # a_var = action_vars[a] if action_vars[a] != 0 else hparam_haver_var
+            # a_var = max(action_vars[a], hparam_haver_var/a_nvisits)
+            a_var = action_vars[a] if action_vars[a] != 0 else hparam_haver_var
             
             gam_log = (num_actions_visited*total_nvisits/a_nvisits)**4
             a_gam = np.sqrt(a_var)*np.sqrt(18/a_nvisits*np.log(gam_log))
@@ -382,8 +382,8 @@ def haver21count(
         a_nvisits = action_nvisits[a]
         a_value = action_values[a]
         if a_nvisits != 0:
-            a_var = max(action_vars[a], hparam_haver_var/a_nvisits)
-            # a_var = action_vars[a] if action_vars[a] != 0 else hparam_haver_var
+            # a_var = max(action_vars[a], hparam_haver_var/a_nvisits)
+            a_var = action_vars[a] if action_vars[a] != 0 else hparam_haver_var
             # a_var = action_vars[a]
             
             gam_log = (num_actions_visited*total_nvisits/a_nvisits)**4

@@ -17,9 +17,9 @@ def parse_args():
     
     # General params
     parser.add_argument('--num_trials', type=int, default=20)
-    parser.add_argument('--ep_max_steps', type=int, default=100)
+    parser.add_argument('--ep_max_steps', type=int, default=10)
     
-    parser.add_argument('--mcts_max_iterations', type=int, default=2000)
+    parser.add_argument('--mcts_num_trajectories', type=int, default=1000)
     parser.add_argument('--mcts_max_depth', type=int, default=3)
     parser.add_argument('--mcts_rollout_max_depth', type=int, default=100)
 

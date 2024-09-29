@@ -7,20 +7,59 @@ from env import FrozenLakeCustom, FrozenLakeSimulator
 from config import parse_args
 from mcts_haver import haver21count
 
-a = [2, 4, 3]
-b = [2, 3, 3]
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
-if np.any(a != b):
-    print("yes")
+# def get_action_max_ucb(action_values, action_nvisits, debug=False):
 
-param = 0.1
-values = np.array([-101.,    0., -100.,    0.])
-nvisits = np.array([1., 0., 1., 0.])
 
-q_est = haver21count(values, nvisits,  param)
-print(q_est)
+#     total_nvisits = np.sum(action_nvisits)
+#     action_bonuses = np.sqrt(2*np.log(total_nvisits)/action_nvisits)
+#     action_ucbs = action_values + action_bonuses*30
 
+#     best_actions = np.where(action_ucbs == np.max(action_ucbs))[0]
+#     action = np.random.choice(best_actions)
+#     print(best_actions)
+#     print(action)
+#     # best_action = np.argmax(action_ucbs)
+#     return action
+
+
+param = 10000
+values = np.array([-109.,     -100.,      -88.5385, -104.25  ])
+nvisits = np.array(  [ 9., 16., 13., 12.])
+var = np.array([  33.3333,    0.,     1340.4024,   18.1875])
+
+# action = get_action_max_ucb(values, nvisits)
+# # print(best_actions)
+# stop
+q_est = haver21count(values, nvisits, var, param, debug=True)
+print(f"{q_est:0.4f}")
 stop
+
+x = np.array([-103, -103, -103, -103, -103, -103, -103, -103, -103, -103, -103, -103, -0, -0])
+x = np.array([-118.0, -102.0, -103.0])
+x_std0 = np.std(x, ddof=0)
+x_std1 = np.std(x, ddof=0)
+print(f"x_std0={x_std0}")
+print(f"x_std1={x_std1}")
+
+
+x_avg = 0
+x2_avg = 0
+for i in range(1,len(x)+1):
+    w = 1/i
+    x_avg = (1-w)*x_avg + w*x[i-1]
+    x2_avg = (1-w)*x2_avg + w*x[i-1]**2
+    
+print(f"x_avg={x_avg}")
+print(f"x2_avg={x2_avg}")
+
+x_std_emp = np.sqrt(x2_avg - x_avg**2)
+print(f"x_std_emp={x_std_emp}")
+print(f"x_var_emp={x_std_emp**2}")
+
+# stop
 # env_id = "FrozenLake-v1"
 # env = FrozenLakeCustom(map_name="4x4", is_slippery=True, render_mode=None)
 

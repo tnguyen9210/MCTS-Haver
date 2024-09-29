@@ -19,8 +19,8 @@ from config import parse_args
 import logging
 # logger = logging.getLogger()
 # logger.setLevel(logging.FATAL)
-# logging.basicConfig(level=logging.DEBUG)
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.WARNING)
 # logging.basicConfig(level=logging.FATAL)
 
 # import ipdb
@@ -33,7 +33,7 @@ random.seed(0)
 # params
 args = parse_args()
 args["update_method"] = "haver"
-args["rollout_method"] = "vit"
+args["rollout_method"] = ""
 
 #
 env_id = "FrozenLake-v1"
@@ -56,7 +56,7 @@ V_vit, Q_vit = value_iteration(
     
 
 args["hparam_ucb_scale"] = 30
-args["hparam_haver_var"] = 0.1
+args["hparam_haver_var"] = 1
 
 ep_reward_ary = []
 Q_mcts_avg = defaultdict(lambda: np.zeros(simulator.num_actions))
