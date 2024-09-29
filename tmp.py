@@ -56,7 +56,7 @@ V_vit, Q_vit = value_iteration(
     
 
 args["hparam_ucb_scale"] = 30
-args["hparam_haver_var"] = 1
+args["hparam_haver_var"] = 30**2
 
 ep_reward_ary = []
 Q_mcts_avg = defaultdict(lambda: np.zeros(simulator.num_actions))
