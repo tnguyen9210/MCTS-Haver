@@ -10,6 +10,15 @@ from mcts_haver import haver21count
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+# create gym env
+env = FrozenLakeCustom(map_name="4x4", is_slippery=True, render_mode=None)
+simulator = FrozenLakeSimulator(env.P)
+
+next_state, reward, terminate, _, _ = simulator.step(0, 1)
+print(next_state)
+stop
+    
+
 # def get_action_max_ucb(action_values, action_nvisits, debug=False):
 
 

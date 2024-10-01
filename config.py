@@ -10,6 +10,7 @@ def parse_args():
     parser.add_argument('--env_id', type=str, default="FrozenLake-v1")
     parser.add_argument('--map_name', type=str, default="4x4")
     parser.add_argument('--is_slippery', type=bool, default=False)
+    parser.add_argument('--slipper_mode', type=str, default="extreme")
     parser.add_argument('--render_mode', type=str, default="")
 
     # 

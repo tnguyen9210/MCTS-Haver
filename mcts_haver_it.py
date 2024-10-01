@@ -40,12 +40,13 @@ class MCTS:
 
     def run(self, cur_state):
         # cur_node = Node()
-        self.Q = defaultdict(lambda: np.zeros(self.num_actions))
         self.N = defaultdict(lambda: np.zeros(self.num_actions))
         self.NH = defaultdict(lambda: np.zeros(self.num_actions))
+        self.NM = defaultdict(lambda: np.zeros(self.num_actions))
 
-        self.QM = defaultdict(lambda: -np.inf*np.ones(self.num_actions))  # Q-table for Haver
+        self.Q = defaultdict(lambda: np.zeros(self.num_actions))
         self.QH = defaultdict(lambda: -np.inf*np.ones(self.num_actions))  # Q-table for Haver
+        self.QM = defaultdict(lambda: -np.inf*np.ones(self.num_actions))  # Q-table for Haver
 
         self.R = defaultdict(lambda: np.zeros(self.num_actions))  # Q-table for avg reward
         
@@ -55,7 +56,7 @@ class MCTS:
         self.Q_list = defaultdict(lambda: defaultdict(list))
         
         
-        ipdb.set_trace()
+        # ipdb.set_trace()
         
         for it in range(self.num_trajectories):
             # ipdb.set_trace()
@@ -121,50 +122,36 @@ class MCTS:
                 # ipdb.set_trace()
 
                 self.NH[cur_state][action] += 1
-                
-                if terminated:
-                    self.QH[cur_state][action] = self.R[cur_state][action]
-                    self.QM[cur_state][action] = self.R[cur_state][action]
-                        
-                elif np.sum(self.N[next_state]) > 0:
-                    if self.update_method == "haver":
-                        if np.sum(self.N[next_state] <= 10) > 1:
-                            self.QH[cur_state][action] = copy.deepcopy(self.Q[cur_state][action])
-                        else:
-                            self.QH[cur_state][action] = \
-                                self.R[cur_state][action] + haver21count(
-                                    self.Q[next_state], self.N[next_state],
-                                    self.var[next_state],
+                self.NM[cur_state][action] += 1
+
+                for a in range(self.num_actions):
+                    s_prime, r, termi, _, _ = self.simulator.step(cur_state, a)
+                    if termi:
+                        self.QH[cur_state][a] = r
+                        self.QM[cur_state][a] = r
+                    elif np.sum(self.N[s_prime]) > 0:
+                        if self.update_method == "haver":
+                            self.QH[cur_state][a] = \
+                                self.R[cur_state][a] + haver21count(
+                                    self.Q[s_prime], self.N[s_prime],
+                                    self.var[s_prime],
                                     self.hparam_haver_var, debug)
+                            logging.info(f"Q[s_prime]= {self.Q[s_prime]}")
+                            logging.info(f"N[s_prime]= {self.N[s_prime]}")
+                            logging.info(f"var[s_prime]= {self.var[s_prime]}")
+                            # logging.info(f"Q_list[s_prime]= {self.Q_list[s_prime]}")
+                            logging.info(f"QH[cur_state]= {self.QH[cur_state]}")
+                            logging.info(f"QH[cur_state][a]= {self.QH[cur_state][a]:0.4f}")
+                            logging.info(f"Q[cur_state]= {self.Q[cur_state]}")
+                            logging.info(f"Q[cur_state][a]= {self.Q[cur_state][a]:0.4f}")
+                            z = 0
                         
-                        logging.info(f"Q[next_state]= {self.Q[next_state]}")
-                        logging.info(f"N[next_state]= {self.N[next_state]}")
-                        logging.info(f"var[next_state]= {self.var[next_state]}")
-                        # logging.info(f"Q_list[next_state]= {self.Q_list[next_state]}")
-                        logging.info(f"QH[cur_state]= {self.QH[cur_state]}")
-                        logging.info(f"QH[cur_state][action]= {self.QH[cur_state][action]:0.4f}")
-                        logging.info(f"Q[cur_state]= {self.Q[cur_state]}")
-                        logging.info(f"Q[cur_state][action]= {self.Q[cur_state][action]:0.4f}")
-                        a = 0
-                        
-                    elif self.update_method == "max":
-                        self.QM[cur_state][action] = \
-                            self.R[cur_state][action] + np.max(
-                                self.Q[next_state][self.N[next_state] > 0])
-
-                        # self.QH[cur_state][action] = \
-                        #     self.R[cur_state][action] + haver21count(
-                        #         self.Q[next_state], self.N[next_state],
-                        #         self.hparam_haver_var, debug)
-
-                        # if np.any(self.QM[cur_state][action] != self.QH[cur_state][action]):
-                        #     ipdb.set_trace()
-                            
-                        logging.info(f"QM[cur_state][action]= {self.QM[cur_state][action]}")
-                        logging.info(f"QH[cur_state][action]= {self.QH[cur_state][action]}")
-
-                        a = 0
-                # ipdb.set_trace()
+                        elif self.update_method == "max":
+                            self.QM[cur_state][a] = \
+                                self.R[cur_state][a] + np.max(
+                                    self.Q[s_prime][self.N[s_prime] > 0])
+                
+                
                         
             return q
 
@@ -192,7 +179,7 @@ class MCTS:
             # find unvisited_actions
             unvisited_actions = []
             for action in range(self.num_actions):
-                if self.QM[cur_state][action] == -np.inf:
+                if self.NM[cur_state][action] == 0:
                     unvisited_actions.append(action)
             logging.info(f"unvisited_actions={unvisited_actions}")
 
@@ -202,9 +189,8 @@ class MCTS:
                 action = np.random.choice(unvisited_actions)
             else:
                 action_values = self.QM[cur_state]
-                action_nvisits = self.N[cur_state]
+                action_nvisits = self.NM[cur_state]
                 action = self.get_action_max_ucb(action_values, action_nvisits, debug)
-
                 
         else:
             # find unvisited_actions
@@ -220,7 +206,6 @@ class MCTS:
             elif len(unvisited_actions) == 0:
                 # choose an action that maximizes ucb
                 action_values = self.Q[cur_state]
-
                 action_nvisits = self.N[cur_state]
                 action = self.get_action_max_ucb(action_values, action_nvisits, debug)
 
@@ -245,7 +230,7 @@ class MCTS:
             
         action = np.random.choice(best_actions)
         # best_actions = [i if action_ucbs[i] == np.max(action_ucbs) for i in range(self.num_actions)]
-        # best_action = np.argmax(action_ucbs)
+        # action = np.argmax(action_ucbs)
     
 
         # best_action = None
@@ -355,13 +340,14 @@ def haver21count(
     rhat_idx = None
     rhat_gam = None
     rhat_muhat = None
+    rhat_nvisits = None
     max_lcb = -np.inf
     for a in range(num_actions):
         a_nvisits = action_nvisits[a]
         a_value = action_values[a]
         if a_nvisits != 0:
-            # a_var = max(action_vars[a], hparam_haver_var/a_nvisits)
-            a_var = action_vars[a] if action_vars[a] != 0 else hparam_haver_var
+            a_var = max(action_vars[a], hparam_haver_var/a_nvisits)
+            # a_var = action_vars[a] if action_vars[a] != 0 else hparam_haver_var
             
             gam_log = (num_actions_visited*total_nvisits/a_nvisits)**4
             a_gam = np.sqrt(a_var)*np.sqrt(18/a_nvisits*np.log(gam_log))
@@ -372,6 +358,7 @@ def haver21count(
                 max_lcb = a_lcb
                 rhat_idx = a
                 rhat_gam = a_gam
+                rhat_nvisits = a_nvisits
 
     # print(max_lcb)
     Bset_idxes = []
@@ -382,17 +369,18 @@ def haver21count(
         a_nvisits = action_nvisits[a]
         a_value = action_values[a]
         if a_nvisits != 0:
-            # a_var = max(action_vars[a], hparam_haver_var/a_nvisits)
-            a_var = action_vars[a] if action_vars[a] != 0 else hparam_haver_var
+            a_var = max(action_vars[a], hparam_haver_var/a_nvisits)
+            # a_var = action_vars[a] if action_vars[a] != 0 else hparam_haver_var
             # a_var = action_vars[a]
             
             gam_log = (num_actions_visited*total_nvisits/a_nvisits)**4
             a_gam = np.sqrt(a_var)*np.sqrt(18/a_nvisits*np.log(gam_log))
             # a_gam = hparam_haver_var*np.sqrt(18/a_nvisits*np.log(gam_log))
 
-            if a_value >= max_lcb and a_gam <= 3.0/2*rhat_gam:
+            # if a_value >= max_lcb and a_gam <= 3.0/2*rhat_gam:
+            if a_value >= max_lcb and a_nvisits >= 4.0/9*rhat_nvisits:
                 Bset_muhats[a] = a_value
-                Bset_nvisits[a] = a_nvisits/(a_var)
+                Bset_nvisits[a] = a_nvisits
                 # Bset_nvisits[a] = a_nvisits
                 Bset_idxes.append(a)
 

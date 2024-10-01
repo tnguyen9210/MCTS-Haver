@@ -13,6 +13,7 @@ def greedy_policy(action_means):
 def evaluate(env, Q_table, num_episodes_eval, ep_max_steps):
     
     ep_reward_ary = []
+    ep_step_ary = []
     for i_ep in tqdm(range(num_episodes_eval)):
         np.random.seed(1000+i_ep)
         random.seed(1000+i_ep)
@@ -35,10 +36,11 @@ def evaluate(env, Q_table, num_episodes_eval, ep_max_steps):
             state = next_state
 
         ep_reward_ary.append(ep_reward)
+        ep_step_ary.append(i_step+1)
 
     #     if (i_ep+1) % 1 == 0:
     #         print(f"ep={i_ep+1}, reward={ep_reward:0.4f}, avg_reward = {np.sum(ep_reward_ary)/(i_ep+1):0.4f}")
             
     # print(f"avg_reward = {np.sum(ep_reward_ary)/num_episodes_eval:0.4f}")
 
-    return ep_reward_ary    
+    return ep_reward_ary, ep_step_ary

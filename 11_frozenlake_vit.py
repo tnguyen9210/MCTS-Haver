@@ -25,13 +25,13 @@ def main():
     action_multi = 1
     gamma = 0.95
     
-    num_episodes_eval = 20
+    num_episodes_eval = 100
     ep_max_steps = 100
 
     threshold = 0.00001
 
     # create gym env
-    env = FrozenLakeCustom(map_name="4x4", is_slippery=False, render_mode=None)
+    env = FrozenLakeCustom(map_name="4x4", is_slippery=True, render_mode=None)
     simulator = FrozenLakeSimulator(env.P)
     
     num_states = env.observation_space.n
@@ -43,7 +43,7 @@ def main():
     # logging.info(f"trans_probs = {env.P}")
 
     # run value iteration
-    V_table, Q_table = value_iteration(simulator, num_actions, num_states, gamma, threshold)
+    V_table, Q_table = value_iteration(simulator, gamma, threshold)
 
     for state in range(num_states):
         print(f"\n-> state = {state}")
@@ -53,10 +53,13 @@ def main():
         print(f"best_action={np.argmax(Q_table[state])}")
 
     # evaluate
-    ep_reward_ary = evaluate(env, Q_table, num_episodes_eval, ep_max_steps)
+    ep_reward_ary, ep_step_ary = evaluate(env, Q_table, num_episodes_eval, ep_max_steps)
     reward_mean = np.mean(ep_reward_ary)
     reward_std = np.std(ep_reward_ary, ddof=1)
     print(f"reward = {reward_mean:.2f} +/- {reward_std:.2f}")
+    step_mean = np.mean(ep_step_ary)
+    step_std = np.std(ep_step_ary, ddof=1)
+    print(f"step = {step_mean:.2f} +/- {step_std:.2f}")
 
     # env = FrozenLakeCustom(map_name="4x4", is_slippery=True, render_mode="human")
     # episode_reward_ary = evaluate(env, Q_table, 3, 10)
