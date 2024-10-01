@@ -9,8 +9,9 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--env_id', type=str, default="FrozenLake-v1")
     parser.add_argument('--map_name', type=str, default="4x4")
+    parser.add_argument('--is_state_slippery', type=bool, default=False)
     parser.add_argument('--is_slippery', type=bool, default=False)
-    parser.add_argument('--slipper_mode', type=str, default="extreme")
+    parser.add_argument('--slippery_mode', type=str, default="extreme")
     parser.add_argument('--render_mode', type=str, default="")
 
     # 
@@ -18,7 +19,7 @@ def parse_args():
     
     # General params
     parser.add_argument('--num_trials', type=int, default=20)
-    parser.add_argument('--ep_max_steps', type=int, default=10)
+    parser.add_argument('--ep_max_steps', type=int, default=20)
     
     parser.add_argument('--mcts_num_trajectories', type=int, default=1500)
     parser.add_argument('--mcts_max_depth', type=int, default=3)

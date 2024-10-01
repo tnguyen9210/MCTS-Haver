@@ -15,7 +15,14 @@ RIGHT = 2
 UP = 3
 
 MAPS = {
-    "4x4": ["SFFF", "FHFH", "FFFH", "HFFG"],
+    "4x4": ["SFFF",
+            "FHFH",
+            "FFFH",
+            "HFFG"],
+    "4x4X": ["SFXF",
+            "FHFH",
+            "FFFH",
+            "HFFG"],
     "8x8": [
         "SFFFFFFF",
         "FFFFFFFF",
@@ -34,8 +41,9 @@ class FrozenLakeCustom(FrozenLakeEnv):
         render_mode: Optional[str] = None,
         desc=None,
         map_name="4x4",
+        is_state_slippery=False,
         is_slippery=True,
-        slippery_mode="extreme",    
+        slippery_mode="extreme",
     ):
         # super().__init__()
 
@@ -90,8 +98,15 @@ class FrozenLakeCustom(FrozenLakeEnv):
                     letter = desc[row, col]
                     if letter in b"GH":
                         li.append((1.0, s, 0, True))
+                    elif letter in b"X":
+                        if is_state_slippery:
+                            for b in range(4):
+                                li.append(
+                                    (1.0 / 4.0, *update_probability_matrix(row, col, b))
+                                )
                     else:
                         if is_slippery:
+                            stop
                             if slippery_mode == "extreme":
                                 for b in [(a - 1) % 4, a, (a + 1) % 4]:
                                     li.append(
@@ -137,7 +152,7 @@ class FrozenLakeSimulator:
     def step(self, state, action):
         transitions = self.trans_probs[int(state)][action]
         trans_p = np.array([t[0] for t in transitions])
-        # logging.info(f"action_probs = {action_probs}")
+        # logging.warn(f"state={state}, trans_p = {trans_p}")
         idx = np.random.choice(len(trans_p), 1, p=trans_p)[0]
         p, next_state, reward, terminated = transitions[idx]
         # logging.info(f"state, action, next_state, terminated = {state, action, next_state, terminated}")

@@ -19,6 +19,7 @@ class MCTS:
         
         self.simulator = simulator
         self.num_actions = simulator.num_actions
+        self.num_states = simulator.num_states
         # self.action_multi = action_multi
         self.gamma = args["gamma"]
         self.num_trajectories = args["mcts_num_trajectories"]

@@ -53,7 +53,7 @@ class MCTS:
         self.Q2 = defaultdict(lambda: np.zeros(self.num_actions))
         self.var = defaultdict(lambda: np.zeros(self.num_actions))
 
-        self.Q_list = defaultdict(lambda: defaultdict(list))
+        # self.Q_list = defaultdict(lambda: defaultdict(list))
         
         
         # ipdb.set_trace()
@@ -108,7 +108,7 @@ class MCTS:
 
             self.R[cur_state][action] = (1-w)*self.R[cur_state][action] + w*reward
 
-            self.Q_list[cur_state][action].append(q)
+            # self.Q_list[cur_state][action].append(q)
             
             self.Q2[cur_state][action] = \
                   (1-w)*self.Q2[cur_state][action] + w*q**2
@@ -394,6 +394,7 @@ def haver21count(
 
             # if a_value >= max_lcb and a_gam <= 3.0/2*rhat_gam:
             if a_value >= max_lcb and a_nvisits >= 4.0/9*rhat_nvisits:
+            # if a_value >= max_lcb:
                 Bset_muhats[a] = a_value
                 Bset_nvisits[a] = a_nvisits
                 # Bset_nvisits[a] = a_nvisits

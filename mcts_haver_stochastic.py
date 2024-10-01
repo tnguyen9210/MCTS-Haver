@@ -53,10 +53,10 @@ class MCTS:
         self.Q2 = defaultdict(lambda: np.zeros(self.num_actions))
         self.var = defaultdict(lambda: np.zeros(self.num_actions))
 
-        self.Q_list = defaultdict(lambda: defaultdict(list))
+        # self.Q_list = defaultdict(lambda: defaultdict(list))
         
         
-        ipdb.set_trace()
+        # ipdb.set_trace()
         
         for it in range(self.num_trajectories):
             # ipdb.set_trace()
@@ -108,7 +108,7 @@ class MCTS:
 
             self.R[cur_state][action] = (1-w)*self.R[cur_state][action] + w*reward
 
-            self.Q_list[cur_state][action].append(q)
+            # self.Q_list[cur_state][action].append(q)
             
             self.Q2[cur_state][action] = \
                   (1-w)*self.Q2[cur_state][action] + w*q**2
@@ -142,7 +142,7 @@ class MCTS:
                             if termi:
                                 haver_q += p*r
                                 p_sum += p
-                            elif np.sum(self.N[s_prime] != 0) > 0:
+                            elif np.sum(self.N[s_prime]) > 0:
                                 s_prime_q = haver21count(
                                     self.Q[s_prime], self.N[s_prime],
                                     self.var[s_prime],
@@ -154,7 +154,7 @@ class MCTS:
                         haver_q_adj = haver_q/p_sum
                         
                         self.QH[cur_state][action] = \
-                            self.R[cur_state][action] + haver_q
+                            self.R[cur_state][action] + haver_q_adj
                         
                         # logging.info(f"Q[next_state]= {self.Q[next_state]}")
                         # logging.info(f"N[next_state]= {self.N[next_state]}")
@@ -170,9 +170,30 @@ class MCTS:
                         a = 0
                         
                     elif self.update_method == "max":
+                        transitions = self.simulator.trans_probs[cur_state][action]
+                        max_q = 0
+                        p_sum = 0
+                        for item in transitions:
+                            p, s_prime, r, termi = item
+                            logging.info(f"s_prime = {s_prime}")
+                            if termi:
+                                max_q += p*r
+                                p_sum += p
+                            elif np.sum(self.N[s_prime]) > 0:
+                                s_prime_q = np.max(
+                                    self.Q[s_prime][self.N[s_prime] > 0])
+                                max_q += p*s_prime_q
+                                p_sum += p
+                                logging.info(f"s_prime_q = {s_prime_q}")
+                                
+                        max_q_adj = max_q/p_sum
+                        
                         self.QM[cur_state][action] = \
-                            self.R[cur_state][action] + np.max(
-                                self.Q[next_state][self.N[next_state] > 0])
+                            self.R[cur_state][action] + max_q_adj
+                        
+                        # self.QM[cur_state][action] = \
+                        #     self.R[cur_state][action] + np.max(
+                        #         self.Q[next_state][self.N[next_state] > 0])
 
                         # self.QH[cur_state][action] = \
                         #     self.R[cur_state][action] + haver21count(
@@ -413,7 +434,8 @@ def haver21count(
             # a_gam = hparam_haver_var*np.sqrt(18/a_nvisits*np.log(gam_log))
 
             # if a_value >= max_lcb and a_gam <= 3.0/2*rhat_gam:
-            if a_value >= max_lcb and a_nvisits >= 4.0/9*rhat_nvisits:
+            # if a_value >= max_lcb and a_nvisits >= 4.0/9*rhat_nvisits:
+            if a_value >= max_lcb:
                 Bset_muhats[a] = a_value
                 Bset_nvisits[a] = a_nvisits
                 # Bset_nvisits[a] = a_nvisits

@@ -31,7 +31,10 @@ def main():
     threshold = 0.00001
 
     # create gym env
-    env = FrozenLakeCustom(map_name="4x4", is_slippery=True, render_mode=None)
+    env = FrozenLakeCustom(
+        map_name="4x4X",
+        is_state_slippery=True,
+        is_slippery=False, render_mode=None)
     simulator = FrozenLakeSimulator(env.P)
     
     num_states = env.observation_space.n
