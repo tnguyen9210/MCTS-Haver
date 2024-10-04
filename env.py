@@ -19,9 +19,9 @@ MAPS = {
             "FHFH",
             "FFFH",
             "HFFG"],
-    "4x4X": ["SFXF",
+    "4x4X": ["SFFF",
             "FHFH",
-            "FFFH",
+            "XFFH",
             "HFFG"],
     "8x8": [
         "SFFFFFFF",
