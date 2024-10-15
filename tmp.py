@@ -11,7 +11,7 @@ import multiprocess as mp
 import gym
 from env import FrozenLakeCustom, FrozenLakeSimulator
 
-from mcts_haver_v41 import run_mcts_trial
+from mcts_haver import run_mcts_trial
 from value_iteration import value_iteration
 
 from config import parse_args
@@ -19,9 +19,9 @@ from config import parse_args
 import logging
 # logger = logging.getLogger()
 # logger.setLevel(logging.FATAL)
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.WARNING)
-logging.basicConfig(level=logging.FATAL)
+# logging.basicConfig(level=logging.FATAL)
 
 # import ipdb
 
@@ -32,16 +32,17 @@ random.seed(0)
 
 # params
 args = parse_args()
-args["update_method"] = "avg"
+args["update_method"] = "max"
 args["rollout_method"] = ""
-args["render_mode"] = "human"
+args["render_mode"] = ""
+args["action_multi"] = 4
 
 #
 env_id = "FrozenLake-v1"
-args["map_name"] = '4x4X'
+args["map_name"] = '4x4'
 env = FrozenLakeCustom(
     map_name=args["map_name"],
-    is_state_slippery=True,
+    is_state_slippery=False,
     is_slippery=False, slippery_mode="mild",
     render_mode=args["render_mode"])
 

@@ -11,7 +11,7 @@ import multiprocess as mp
 import gym
 from env import FrozenLakeCustom, FrozenLakeSimulator
 
-from mcts_haver_stochastic import run_mcts_trial
+from mcts_haver import run_mcts_trial
 from value_iteration import value_iteration
 
 from config import parse_args
@@ -19,8 +19,8 @@ from config import parse_args
 import logging
 # logger = logging.getLogger()
 # logger.setLevel(logging.FATAL)
-logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.WARNING)
+# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 # logging.basicConfig(level=logging.FATAL)
 
 # import ipdb
@@ -34,11 +34,16 @@ random.seed(0)
 args = parse_args()
 args["update_method"] = "haver"
 args["rollout_method"] = ""
+args["render_mode"] = ""
+args["action_multi"] = 4
 
 #
 env_id = "FrozenLake-v1"
+args["map_name"] = '4x4'
 env = FrozenLakeCustom(
-    map_name=args["map_name"], is_slippery=True,
+    map_name=args["map_name"],
+    is_state_slippery=False,
+    is_slippery=False, slippery_mode="mild",
     render_mode=args["render_mode"])
 
 simulator = FrozenLakeSimulator(env.P)
@@ -55,8 +60,8 @@ V_vit, Q_vit = value_iteration(
 #     logging.warning(f"best_action={np.argmax(Q_vit[state])}")
     
 
-args["hparam_ucb_scale"] = 30
-args["hparam_haver_var"] = 30**2
+args["hparam_ucb_scale"] = 64
+args["hparam_haver_var"] = 100**2
 
 ep_reward_ary = []
 Q_mcts_avg = defaultdict(lambda: np.zeros(simulator.num_actions))

@@ -10,6 +10,11 @@ from mcts_haver import haver21count
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+a = 9
+b = a % 4
+print(b)
+stop
+
 # create gym env
 env = FrozenLakeCustom(map_name="4x4", is_slippery=True, render_mode=None)
 simulator = FrozenLakeSimulator(env.P)

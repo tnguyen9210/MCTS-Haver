@@ -18,8 +18,8 @@ class MCTS:
     def __init__(self, simulator, rollout_Q, args):
         
         self.simulator = simulator
-        self.num_actions = simulator.num_actions
-        # self.action_multi = action_multi
+        self.num_actions = simulator.num_actions*args["action_multi"]
+        # self.action_multi = args["action_multi"]
         self.gamma = args["gamma"]
         self.num_trajectories = args["mcts_num_trajectories"]
         self.max_depth = args["mcts_max_depth"]
@@ -88,11 +88,11 @@ class MCTS:
         elif depth <= self.max_depth:
             logging.debug(f"case: depth <= max_depth")
             action = self.select_action(cur_state, depth, debug)
-            # action = action % self.action_multi
+            action_t = action % 4
             logging.debug(f"action={action}")
             
             next_state, reward, terminated, _, _ = \
-                self.simulator.step(cur_state, action)
+                self.simulator.step(cur_state, action_t)
             
             q = reward + self.gamma*self.search(next_state, depth+1, terminated, debug)
 
@@ -133,36 +133,16 @@ class MCTS:
                         # if np.sum(self.N[next_state] <= 10) > 1:
                         #     self.QH[cur_state][action] = copy.deepcopy(self.Q[cur_state][action])
                         # else:
-                        transitions = self.simulator.trans_probs[cur_state][action]
-                        haver_q = 0
-                        p_sum = 0
-                        for item in transitions:
-                            p, s_prime, r, termi = item
-                            logging.info(f"s_prime = {s_prime}")
-                            if termi:
-                                haver_q += p*r
-                                p_sum += p
-                            elif np.sum(self.N[s_prime]) > 0:
-                                s_prime_q = haver21count(
-                                    self.Q[s_prime], self.N[s_prime],
-                                    self.var[s_prime],
-                                    self.hparam_haver_var, debug)
-                                haver_q += p*s_prime_q
-                                p_sum += p
-                                logging.info(f"s_prime_q = {s_prime_q}")
-                                
-                        haver_q_adj = haver_q/p_sum
-                        
                         self.QH[cur_state][action] = \
-                            self.R[cur_state][action] + haver_q_adj
+                            self.R[cur_state][action] + haver21count(
+                                self.Q[next_state], self.N[next_state],
+                                self.var[next_state],
+                                self.hparam_haver_var, debug)
                         
-                        # logging.info(f"Q[next_state]= {self.Q[next_state]}")
-                        # logging.info(f"N[next_state]= {self.N[next_state]}")
-                        # logging.info(f"var[next_state]= {self.var[next_state]}")
+                        logging.info(f"Q[next_state]= {self.Q[next_state]}")
+                        logging.info(f"N[next_state]= {self.N[next_state]}")
+                        logging.info(f"var[next_state]= {self.var[next_state]}")
                         # logging.info(f"Q_list[next_state]= {self.Q_list[next_state]}")
-                        logging.info(f"p_sum = {p_sum}")
-                        logging.info(f"haver_q = {haver_q}")
-                        logging.info(f"haver_q_adj = {haver_q_adj}")
                         logging.info(f"QH[cur_state]= {self.QH[cur_state]}")
                         logging.info(f"QH[cur_state][action]= {self.QH[cur_state][action]:0.4f}")
                         logging.info(f"Q[cur_state]= {self.Q[cur_state]}")
@@ -170,30 +150,9 @@ class MCTS:
                         a = 0
                         
                     elif self.update_method == "max":
-                        transitions = self.simulator.trans_probs[cur_state][action]
-                        max_q = 0
-                        p_sum = 0
-                        for item in transitions:
-                            p, s_prime, r, termi = item
-                            logging.info(f"s_prime = {s_prime}")
-                            if termi:
-                                max_q += p*r
-                                p_sum += p
-                            elif np.sum(self.N[s_prime]) > 0:
-                                s_prime_q = np.max(
-                                    self.Q[s_prime][self.N[s_prime] > 0])
-                                max_q += p*s_prime_q
-                                p_sum += p
-                                logging.info(f"s_prime_q = {s_prime_q}")
-                                
-                        max_q_adj = max_q/p_sum
-                        
                         self.QM[cur_state][action] = \
-                            self.R[cur_state][action] + max_q_adj
-                        
-                        # self.QM[cur_state][action] = \
-                        #     self.R[cur_state][action] + np.max(
-                        #         self.Q[next_state][self.N[next_state] > 0])
+                            self.R[cur_state][action] + np.max(
+                                self.Q[next_state][self.N[next_state] > 0])
 
                         # self.QH[cur_state][action] = \
                         #     self.R[cur_state][action] + haver21count(
@@ -326,9 +285,10 @@ class MCTS:
             else:
                 action = np.random.choice(range(self.num_actions))
             # action = action % self.action_multi
+            action_t = action % 4
             # logging.info(f"action={action}")
             next_state, reward, terminated, _, _ = \
-                self.simulator.step(cur_state, action)
+                self.simulator.step(cur_state, action_t)
             total_reward += reward
             
             # logging.info(f"cur_state={cur_state}, action={action}, next_state={next_state}, reward={reward}")
@@ -474,7 +434,8 @@ def run_mcts_trial(env, simulator, Q_vit, i_trial, args):
     for i_step in range(args["ep_max_steps"]):
         logging.warn(f"\n-> i_step={i_step}")
         action = mcts.run(state)
-        next_state, reward, terminated, truncated, info = env.step(action)
+        action_t = action % 4
+        next_state, reward, terminated, truncated, info = env.step(action_t)
         ep_reward += reward
         logging.warn(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
         logging.warn(f"Q[state] = {mcts.Q[state]}")
