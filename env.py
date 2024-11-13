@@ -144,10 +144,11 @@ class FrozenLakeCustom(FrozenLakeEnv):
     
 
 class FrozenLakeSimulator:
-    def __init__(self, trans_probs):
+    def __init__(self, trans_probs, simulator_seed):
         self.trans_probs = trans_probs
         self.num_states = len(trans_probs)
         self.num_actions = len(trans_probs[0])
+        self.rng = np.random.Generator(np.random.PCG64(simulator_seed))
 
     def step(self, state, action):
         transitions = self.trans_probs[int(state)][action]

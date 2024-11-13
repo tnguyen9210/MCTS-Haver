@@ -15,7 +15,7 @@ import logging
 import ipdb
 
 class MCTS:
-    def __init__(self, simulator, rollout_Q, args):
+    def __init__(self, simulator, rollout_Q, mcts_seed, args):
 
         self.tol = 1e-7
         self.simulator = simulator
@@ -32,6 +32,8 @@ class MCTS:
         
         self.rollout_method = args["rollout_method"]
         self.rollout_Q = rollout_Q
+
+        self.rng = np.random.Generator(np.random.PCG64(mcts_seed))
         
         logging.debug(f"\n-> init")
         logging.debug(f"num_actions={self.num_actions}")
@@ -39,6 +41,7 @@ class MCTS:
         logging.debug(f"max_depth={self.max_depth}")
         logging.debug(f"rollout_max_depth={self.rollout_max_depth}")
 
+    # @profile
     def run(self, cur_state):
         # cur_node = Node()
         self.N = defaultdict(lambda: np.zeros(self.num_actions))
@@ -74,7 +77,8 @@ class MCTS:
         # action = self.get_action_max_ucb(cur_state, debug=True)
         # action = action % self.action_multi
         return action
-    
+
+    # @profile
     def search(self, cur_state, depth, terminated, debug):
         logging.debug(f"\n-> search")
         logging.debug(f"cur_state={cur_state}, depth={depth}, terminated={terminated}")
@@ -180,6 +184,7 @@ class MCTS:
                         
             return q
 
+    # @profile
     def select_action(self, cur_state, depth, debug=False):
         logging.debug(f"\n-> select_action")
         if self.update_method == "haver" and depth == 0:
@@ -241,7 +246,8 @@ class MCTS:
                 action = self.get_action_max_ucb(action_values, action_nvisits, debug)
 
         return action
-    
+
+    # @profile
     def get_action_max_ucb(self, action_values, action_nvisits, debug=False):
         # if np.sum(action_nvisits > 0) < self.num_actions:
         #     print("get_action_max_ucb, Q[cur_state] does not have enough children")
@@ -276,11 +282,10 @@ class MCTS:
             print(action_ucbs)
             print(best_actions)
             
-        action = np.random.choice(best_actions)
+        action = self.rng.choice(best_actions)
         
         return action
 
-    
     def rollout(self, cur_state):
         # logging.info(f"\n-> rollout")
         total_reward = 0
@@ -290,7 +295,7 @@ class MCTS:
                 action = np.argmax(self.rollout_Q[cur_state])
                 # logging.warning(f"cur_state={cur_state}, action={action}")
             else:
-                action = np.random.choice(range(self.num_actions))
+                action = self.rng.choice(range(self.num_actions))
             # action = action % self.action_multi
             action_t = action % 4
             # logging.info(f"action={action}")
@@ -307,7 +312,7 @@ class MCTS:
             
         return total_reward
 
-    
+# @profile
 def haver21count(
         action_values, action_nvisits, action_vars, hparam_haver_var, debug=False):
     
@@ -347,14 +352,14 @@ def haver21count(
     return haver_est
     
 
-def run_mcts_trial(env, simulator, Q_vit, i_trial, args):
+def run_mcts_trial(env, simulator, Q_vit, i_trial, env_seed, mcts_seed, args):
 
-    np.random.seed(1000+i_trial)
-    random.seed(1000+i_trial)
-    state, info = env.reset(seed=1000+i_trial)
+    # np.random.seed(1000+i_trial)
+    # random.seed(1000+i_trial)
+    state, info = env.reset(seed=int(env_seed))
     
     # run trials
-    mcts = MCTS(simulator, Q_vit, args)
+    mcts = MCTS(simulator, Q_vit, mcts_seed, args)
 
     ep_reward = 0
     for i_step in range(args["ep_max_steps"]):
