@@ -15,7 +15,14 @@ RIGHT = 2
 UP = 3
 
 MAPS = {
-    "4x4": ["SFFF", "FHFH", "FFFH", "HFFG"],
+    "4x4": ["SFFF",
+            "FHFH",
+            "FFFH",
+            "HFFG"],
+    "4x4X": ["SFFF",
+            "FHFH",
+            "XFFH",
+            "HFFG"],
     "8x8": [
         "SFFFFFFF",
         "FFFFFFFF",
@@ -34,7 +41,9 @@ class FrozenLakeCustom(FrozenLakeEnv):
         render_mode: Optional[str] = None,
         desc=None,
         map_name="4x4",
+        is_state_slippery=False,
         is_slippery=True,
+        slippery_mode="extreme",
     ):
         # super().__init__()
 
@@ -89,17 +98,27 @@ class FrozenLakeCustom(FrozenLakeEnv):
                     letter = desc[row, col]
                     if letter in b"GH":
                         li.append((1.0, s, 0, True))
+                    elif letter in b"X":
+                        if is_state_slippery:
+                            for b in range(4):
+                                li.append(
+                                    (1.0 / 4.0, *update_probability_matrix(row, col, b))
+                                )
                     else:
                         if is_slippery:
-                            # li.append((0.8, *update_probability_matrix(row, col, a)))
-                            # for b in [(a - 1) % 4, (a + 1) % 4]:
-                            #     li.append(
-                            #         (0.1, *update_probability_matrix(row, col, b))
-                            #     )
-                            for b in [(a - 1) % 4, a, (a + 1) % 4]:
-                                li.append(
-                                    (1.0 / 3.0, *update_probability_matrix(row, col, b))
+                            stop
+                            if slippery_mode == "extreme":
+                                for b in [(a - 1) % 4, a, (a + 1) % 4]:
+                                    li.append(
+                                        (1.0 / 3.0, *update_probability_matrix(row, col, b))
                                 )
+                            else:
+                                li.append((0.8, *update_probability_matrix(row, col, a)))
+                                for b in [(a - 1) % 4, (a + 1) % 4]:
+                                    li.append(
+                                        (0.1, *update_probability_matrix(row, col, b))
+                                    )
+                            
                         else:
                             li.append((1.0, *update_probability_matrix(row, col, a)))
 
@@ -125,16 +144,17 @@ class FrozenLakeCustom(FrozenLakeEnv):
     
 
 class FrozenLakeSimulator:
-    def __init__(self, trans_probs):
+    def __init__(self, trans_probs, simulator_seed):
         self.trans_probs = trans_probs
         self.num_states = len(trans_probs)
         self.num_actions = len(trans_probs[0])
+        self.rng = np.random.Generator(np.random.PCG64(simulator_seed))
 
     def step(self, state, action):
         transitions = self.trans_probs[int(state)][action]
         trans_p = np.array([t[0] for t in transitions])
-        # logging.info(f"action_probs = {action_probs}")
-        idx = np.random.choice(len(trans_p), 1, p=trans_p)[0]
+        # logging.warn(f"state={state}, trans_p = {trans_p}")
+        idx = self.rng.choice(len(trans_p), 1, p=trans_p)[0]
         p, next_state, reward, terminated = transitions[idx]
         # logging.info(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
         return (next_state, reward, terminated, False, {"prob": p})

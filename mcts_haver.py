@@ -238,7 +238,7 @@ class MCTS:
 
             if len(unvisited_actions) != 0:  # some nodes are not visited
                 # choose a random action 
-                action = np.random.choice(unvisited_actions)
+                action = self.rng.choice(unvisited_actions)
             elif len(unvisited_actions) == 0:
                 # choose an action that maximizes ucb
                 action_values = self.Q[cur_state]
@@ -352,6 +352,7 @@ def haver21count(
     return haver_est
     
 
+import ipdb
 def run_mcts_trial(env, simulator, Q_vit, i_trial, env_seed, mcts_seed, args):
 
     # np.random.seed(1000+i_trial)
@@ -365,8 +366,10 @@ def run_mcts_trial(env, simulator, Q_vit, i_trial, env_seed, mcts_seed, args):
     for i_step in range(args["ep_max_steps"]):
         logging.warn(f"\n-> i_step={i_step}")
         action = mcts.run(state)
+        # ipdb.set_trace()
         action_t = action % 4
         next_state, reward, terminated, truncated, info = env.step(action_t)
+        # ipdb.set_trace()
         ep_reward += reward
         logging.warn(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
         logging.warn(f"Q[state] = {mcts.Q[state]}")
@@ -381,6 +384,7 @@ def run_mcts_trial(env, simulator, Q_vit, i_trial, env_seed, mcts_seed, args):
 
         state = next_state
 
+    # ipdb.set_trace()
     return mcts.Q, ep_reward
 
 
