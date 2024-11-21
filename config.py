@@ -32,6 +32,7 @@ def parse_args():
     #
     parser.add_argument('--action_multi', type=int, default=1)
     parser.add_argument('--hparam_ucb_scale', type=float, default=1.0)
+    parser.add_argument('--hparam_ucb_scale_mean', type=float, default=1.0)
     parser.add_argument('--hparam_haver_var', type=float, default=1.0)
 
     # value iteration

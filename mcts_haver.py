@@ -26,6 +26,7 @@ class MCTS:
         self.max_depth = args["mcts_max_depth"]
         self.rollout_max_depth = args["mcts_rollout_max_depth"]
         self.hparam_ucb_scale = args["hparam_ucb_scale"]
+        self.hparam_ucb_scale_mean = args["hparam_ucb_scale_mean"]
         self.hparam_haver_var = args["hparam_haver_var"]
 
         self.update_method = args["update_method"]
@@ -264,7 +265,7 @@ class MCTS:
             
             total_nvisits = np.sum(my_action_nvisits)
             action_bonuses = np.sqrt(2*np.log(total_nvisits)/my_action_nvisits)
-            my_action_ucbs = my_action_values + action_bonuses*self.hparam_ucb_scale
+            my_action_ucbs = self.hparam_ucb_scale_mean*my_action_values + action_bonuses*self.hparam_ucb_scale
 
             action_ucbs[idx_action_visited] = my_action_ucbs
 

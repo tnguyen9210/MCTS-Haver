@@ -35,7 +35,7 @@ random.seed(0)
 
 # params
 args = parse_args()
-args["update_method"] = "haver"
+args["update_method"] = "max"
 args["rollout_method"] = ""
 args["render_mode"] = ""
 args["action_multi"] = 1
@@ -84,22 +84,19 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
     return ep_reward
 
 hparam_ucb_scale_list = np.arange(10, 100, 10)
-hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
+# hparam_ucb_scale_list = np.arange(20, 64, 4)
+hparam_ucb_scale_list = [10**6]
 # hparam_ucb_scale_list = [2**i for i in range(1, 9)]
-args["hparam_ucb_scale"] = 64
 
-hparam_haver_std_list = np.arange(10, 100, 10)
-hparam_haver_std_list = [1/16, 1/8, 1/4, 1, 4, 8, 16]
-# hparam_haver_std_list = [1/16, 1/8]
-# hparam_haver_std_list = [2**i for i in range(1, 9)]
+hparam_ucb_scale_mean_list = [0]
+
 
 # num_trajectories_list = [200, 500, 1000, 1500, 2000, 2500, 3000]
-num_trajectories_list = [100, 200, 500]
-# num_trajectories_list = [2]
+num_trajectories_list = [200, 400, 100, 600, 800, 1000]
 
 best_param_list = []
 max_reward_mean_list = []
-log_text
+log_text = ""
 res_text1 = ""
 res_text2 = ""
 for num_trajectories in num_trajectories_list:
@@ -117,12 +114,14 @@ for num_trajectories in num_trajectories_list:
 
         # print(f"hparam_ucb_scale = {hparam_ucb_scale}")
         args["hparam_ucb_scale"] = hparam_ucb_scale
+        args["hparam_ucb_scale_mean"] = 0
         
         pool = mp.Pool()
         pool.starmap(
                 run_trial, 
                 [(i, Q_vit, env_seeds[i], simulator_seeds[i], mcts_seeds[i], args) for i in range(args["num_trials"])])
-
+        pool.close()
+        
         reward_mean = np.mean(ep_reward_list)
         reward_std = np.std(ep_reward_list, ddof=1) if len(ep_reward_list) > 1 else 0
         reward_error = reward_std/np.sqrt(args["num_trials"])
@@ -154,7 +153,7 @@ for num_trajectories in num_trajectories_list:
     best_param_list.append(best_param)
 
 tmp = f"num_trials = {m} \n"
-with open("./results/53_frozenlake_ns_haver_uni_rollout.txt", 'w') as f:
+with open("./results/52_frozenlake_ns_max_uni_rollout.txt", 'w') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
