@@ -281,8 +281,9 @@ class MCTS:
             print(action_nvisits)
             print(action_ucbs)
             print(best_actions)
-            
-        action = self.rng.choice(best_actions)
+
+        action = best_actions[self.rng.integers(len(best_actions))]
+        # action = self.rng.choice(best_actions)
         
         return action
 
