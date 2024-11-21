@@ -154,6 +154,11 @@ class FrozenLakeSimulator:
         transitions = self.trans_probs[int(state)][action]
         trans_p = np.array([t[0] for t in transitions])
         # logging.warn(f"state={state}, trans_p = {trans_p}")
+        # print()
+        # print(state, action)
+        # print(transitions)
+        # print(trans_p)
+        # print(self.rng.choice(len(trans_p), 1, p=trans_p))
         idx = self.rng.choice(len(trans_p), 1, p=trans_p)[0]
         p, next_state, reward, terminated = transitions[idx]
         # logging.info(f"state, action, next_state, terminated = {state, action, next_state, terminated}")

@@ -59,3 +59,5 @@ reward = -17.39 +/- 1.50
 reward = -13.70 +/- 1.30
 max_reward_mean = -6.72
 it takes 414.5746
+
+
