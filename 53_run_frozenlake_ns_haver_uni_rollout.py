@@ -180,7 +180,7 @@ for num_trajectories in num_trajectories_list:
     
 
 tmp = f"num_trials = {m} \n"
-with open("./results/53_frozenlake_ns_haver_uni_rollout.txt", 'w') as f:
+with open("./results/53_frozenlake_ns_haver_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
