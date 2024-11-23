@@ -14,4 +14,4 @@ with Pool() as p:
 end_time = time.time()  # Record end time
 
 parallel_runtime = end_time - start_time
-print(f"Parallel Runtime: {parallel_runtime:.2f} seconds")
+print(f"Parallel Runtime: {parallel_runtime:.4f} seconds")
