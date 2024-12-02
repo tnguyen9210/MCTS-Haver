@@ -149,6 +149,9 @@ for num_trajectories in num_trajectories_list:
     max_reward_mean_list.append(max_reward_mean)
     best_param_list.append(best_param)
 
+print(res_text1)
+print(res_text2)
+
 tmp = f"num_trials = {m} \n"
 with open("./results/53_frozenlake_ns_haver_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
