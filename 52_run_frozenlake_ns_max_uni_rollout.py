@@ -86,7 +86,7 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
 # hparam_ucb_scale_list = np.arange(10, 100, 10)
 # hparam_ucb_scale_list = np.arange(20, 64, 4)
 # hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
-hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(1,7)]
+hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
 
 
 # num_trajectories_list = [200, 400, 100, 600, 800, 1000]
@@ -122,7 +122,7 @@ for num_trajectories in num_trajectories_list:
         reward_mean = np.mean(ep_reward_list)
         reward_std = np.std(ep_reward_list, ddof=1) if len(ep_reward_list) > 1 else 0
         reward_error = reward_std/np.sqrt(args["num_trials"])
-        if hparam_ucb_scale <= 128:
+        if hparam_ucb_scale <= hparam_ucb_scale_list[len(hparam_ucb_scale_list)//2]:
             res_text1 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
         else:
             res_text2 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
