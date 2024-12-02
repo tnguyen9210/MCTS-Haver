@@ -83,14 +83,15 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
     Q_mcts_list.append(Q_mcts)
     return ep_reward
 
-hparam_ucb_scale_list = np.arange(10, 100, 10)
+# hparam_ucb_scale_list = np.arange(10, 100, 10)
 # hparam_ucb_scale_list = np.arange(20, 64, 4)
-hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
-# hparam_ucb_scale_list = [2**i for i in range(1, 9)]
+# hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
+hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(1,7)]
 
 
-# num_trajectories_list = [200, 500, 1000, 1500, 2000, 2500, 3000]
-num_trajectories_list = [200, 400, 100, 600, 800, 1000]
+# num_trajectories_list = [200, 400, 100, 600, 800, 1000]
+# num_trajectories_list = [400, 600, 800]
+num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,7)]
 
 best_param_list = []
 max_reward_mean_list = []
@@ -149,7 +150,7 @@ for num_trajectories in num_trajectories_list:
     best_param_list.append(best_param)
 
 tmp = f"num_trials = {m} \n"
-with open("./results/53_frozenlake_ns_haver_uni_rollout.txt", 'w') as f:
+with open("./results/53_frozenlake_ns_haver_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
