@@ -83,17 +83,14 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
     Q_mcts_list.append(Q_mcts)
     return ep_reward
 
-hparam_ucb_scale_list = np.arange(10, 100, 10)
+# hparam_ucb_scale_list = np.arange(10, 100, 10)
 # hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
-tmp = [int(np.sqrt(100)**(i/2)) for i in range(1,7)]
-# hparam_ucb_scale_list = [2**i for i in range(1, 9)]
+hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
 args["hparam_ucb_scale"] = 64
 
-hparam_haver_std_list = np.arange(10, 100, 10)
+# hparam_haver_std_list = np.arange(10, 100, 10)
 # hparam_haver_std_list = [0, 1/16, 1/8, 1/4, 1, 4, 8, 16]
-hparam_haver_std_list = [2**i/16 for i in range(0,7)]
-# hparam_haver_std_list = [1/16, 1/8]
-# hparam_haver_std_list = [2**i for i in range(1, 9)]
+hparam_haver_std_list = [np.sqrt(100)**(i/2) for i in range(-3,3)]
 
 # num_trajectories_list = [200, 500, 1000, 1500, 2000, 2500, 3000]
 # num_trajectories_list = [400, 600, 800]

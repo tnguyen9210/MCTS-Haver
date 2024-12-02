@@ -84,7 +84,6 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
     return ep_reward
 
 # hparam_ucb_scale_list = np.arange(10, 100, 10)
-# hparam_ucb_scale_list = np.arange(20, 64, 4)
 # hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
 hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
 
@@ -153,7 +152,7 @@ print(res_text1)
 print(res_text2)
 
 tmp = f"num_trials = {m} \n"
-with open("./results/53_frozenlake_ns_haver_uni_rollout_v1.txt", 'w+') as f:
+with open("./results/53_frozenlake_ns_max_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
