@@ -89,7 +89,8 @@ hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
 args["hparam_ucb_scale"] = 64
 
 hparam_haver_std_list = np.arange(10, 100, 10)
-hparam_haver_std_list = [0, 1/16, 1/8, 1/4, 1, 4, 8, 16]
+# hparam_haver_std_list = [0, 1/16, 1/8, 1/4, 1, 4, 8, 16]
+hparam_haver_std_list = [2**i/16 for i in range(0,7)]
 # hparam_haver_std_list = [1/16, 1/8]
 # hparam_haver_std_list = [2**i for i in range(1, 9)]
 
@@ -178,6 +179,9 @@ for num_trajectories in num_trajectories_list:
     max_reward_mean_list.append(max_reward_mean)
     best_param_list.append(best_param)
     
+
+print(res_text1)
+print(res_text2)
 
 tmp = f"num_trials = {m} \n"
 with open("./results/53_frozenlake_ns_haver_uni_rollout_v1.txt", 'w+') as f:
