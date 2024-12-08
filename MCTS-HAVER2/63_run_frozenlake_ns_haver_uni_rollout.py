@@ -14,7 +14,7 @@ import multiprocess as mp
 import gym
 from env import FrozenLakeCustom, FrozenLakeSimulator
 
-from mcts_haver import run_mcts_trial
+from mcts_haver_stochastic import run_mcts_trial
 from value_iteration import value_iteration
 
 from config import parse_args
@@ -49,12 +49,17 @@ mcts_seeds = random_seeds[2*m:]
 
 #
 env_id = "FrozenLake-v1"
-args["map_name"] = '4x4'
+args["ep_max_steps"] = 20
+args["map_name"] = "4x4X"
+args["is_state_slippery"] = True
+args["is_slippery"] = False
+args["slippery_mode"] = "mild"
 env = FrozenLakeCustom(
     map_name=args["map_name"], 
     is_state_slippery=args["is_state_slippery"],
     is_slippery=args["is_slippery"], slippery_mode=args["slippery_mode"], 
     render_mode=args["render_mode"])
+
 
 simulator = FrozenLakeSimulator(env.P, simulator_seed=0)
 
@@ -72,7 +77,9 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
     # np.random.seed(random_seeds[i_trial])
 
     env = FrozenLakeCustom(
-        map_name=args["map_name"], is_slippery=args["is_slippery"],
+        map_name=args["map_name"], 
+        is_state_slippery=args["is_state_slippery"],
+        is_slippery=args["is_slippery"], slippery_mode=args["slippery_mode"], 
         render_mode=args["render_mode"])
 
     simulator = FrozenLakeSimulator(env.P, simulator_seed)
