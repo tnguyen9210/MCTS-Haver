@@ -382,35 +382,37 @@ def haver21count(
     return haver_est
 
 
+def run_mcts_trial(env, simulator, Q_vit, i_trial, env_seed, mcts_seed, args):
 
-def run_mcts_trial(env, simulator, Q_vit, i_trial, args):
-
-    np.random.seed(1000+i_trial)
-    random.seed(1000+i_trial)
-    state, info = env.reset(seed=1000+i_trial)
+    # np.random.seed(1000+i_trial)
+    # random.seed(1000+i_trial)
+    state, info = env.reset(seed=int(env_seed))
     
     # run trials
-    mcts = MCTS(simulator, Q_vit, args)
+    mcts = MCTS(simulator, Q_vit, mcts_seed, args)
 
     ep_reward = 0
     for i_step in range(args["ep_max_steps"]):
-        logging.warn(f"\n-> i_step={i_step}")
+        # logging.warn(f"\n-> i_step={i_step}")
         action = mcts.run(state)
-        next_state, reward, terminated, truncated, info = env.step(action)
+        # ipdb.set_trace()
+        action_t = action % 4
+        next_state, reward, terminated, truncated, info = env.step(action_t)
+        # ipdb.set_trace()
         ep_reward += reward
-        logging.warn(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
-        logging.warn(f"Q[state] = {mcts.Q[state]}")
-        logging.warn(f"QH[state] = {mcts.QH[state]}")
+        # logging.warn(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
+        # logging.warn(f"Q[state] = {mcts.Q[state]}")
+        # logging.warn(f"QH[state] = {mcts.QH[state]}")
         # logging.warn(f"QM[state] = {mcts.QM[state]}")
         # logging.warn(f"Qvit[state] = {Q_vit[state]}")
 
-        logging.warn(f"NH[state] = {mcts.NH[state]}")
+        # logging.warn(f"NH[state] = {mcts.NH[state]}")
 
         if terminated:
             break
 
         state = next_state
 
+    # ipdb.set_trace()
     return mcts.Q, ep_reward
-
 
