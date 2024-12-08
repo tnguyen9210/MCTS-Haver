@@ -38,7 +38,7 @@ args = parse_args()
 args["update_method"] = "haver"
 args["rollout_method"] = ""
 args["render_mode"] = ""
-args["action_multi"] = 1
+args["action_multi"] = 4
 print(f"num_trials = {args['num_trials']}")
 
 m = args["num_trials"]
