@@ -20,7 +20,6 @@ class MCTS:
         self.tol = 1e-7
         self.simulator = simulator
         self.num_actions = simulator.num_actions*args["action_multi"]
-        print(self.num_actions)
         
         self.gamma = args["gamma"]
         self.num_trajectories = args["mcts_num_trajectories"]
