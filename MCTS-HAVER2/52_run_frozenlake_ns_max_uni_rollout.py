@@ -14,7 +14,7 @@ import multiprocess as mp
 import gym
 from env import FrozenLakeCustom, FrozenLakeSimulator
 
-from mcts_haver_stochastic import run_mcts_trial
+from mcts_haver import run_mcts_trial
 from value_iteration import value_iteration
 
 from config import parse_args
