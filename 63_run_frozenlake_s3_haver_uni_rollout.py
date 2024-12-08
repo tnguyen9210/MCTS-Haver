@@ -14,7 +14,7 @@ import multiprocess as mp
 import gym
 from env import FrozenLakeCustom, FrozenLakeSimulator
 
-from mcts_haver import run_mcts_trial
+from mcts_haver_stochastic import run_mcts_trial
 from value_iteration import value_iteration
 
 from config import parse_args
@@ -54,12 +54,12 @@ args["map_name"] = "4x4X"
 args["is_state_slippery"] = True
 args["is_slippery"] = False
 args["slippery_mode"] = "mild"
-
 env = FrozenLakeCustom(
     map_name=args["map_name"], 
     is_state_slippery=args["is_state_slippery"],
     is_slippery=args["is_slippery"], slippery_mode=args["slippery_mode"], 
     render_mode=args["render_mode"])
+
 
 simulator = FrozenLakeSimulator(env.P, simulator_seed=0)
 
@@ -80,8 +80,7 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
         map_name=args["map_name"], 
         is_state_slippery=args["is_state_slippery"],
         is_slippery=args["is_slippery"], slippery_mode=args["slippery_mode"], 
-        render_mode=args["render_mode"]
-        )
+        render_mode=args["render_mode"])
 
     simulator = FrozenLakeSimulator(env.P, simulator_seed)
 
@@ -91,18 +90,19 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
     Q_mcts_list.append(Q_mcts)
     return ep_reward
 
-hparam_ucb_scale_list = np.arange(10, 100, 10)
-hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
-# hparam_ucb_scale_list = [2**i for i in range(1, 9)]
+# hparam_ucb_scale_list = np.arange(10, 100, 10)
+# hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
+hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
+args["hparam_ucb_scale"] = 64
 
-hparam_haver_std_list = np.arange(10, 100, 10)
-hparam_haver_std_list = [0, 1/16, 1/8, 1/4, 1, 4, 8, 16]
-# hparam_haver_std_list = [1/16, 1/8]
-# hparam_haver_std_list = [2**i for i in range(1, 9)]
+# hparam_haver_std_list = np.arange(10, 100, 10)
+# hparam_haver_std_list = [0, 1/16, 1/8, 1/4, 1, 4, 8, 16]
+hparam_haver_std_list = [0] + [np.sqrt(100)**(i/2) for i in range(-3,3)]
 
 # num_trajectories_list = [200, 500, 1000, 1500, 2000, 2500, 3000]
-num_trajectories_list = [100, 200, 400]
-# num_trajectories_list = [100, 200]
+# num_trajectories_list = [400, 600, 800]
+num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,7)]
+
 # num_trajectories_list = [2]
 
 best_param_list = []
@@ -185,8 +185,11 @@ for num_trajectories in num_trajectories_list:
     best_param_list.append(best_param)
     
 
+print(res_text1)
+print(res_text2)
+
 tmp = f"num_trials = {m} \n"
-with open("./results/63_frozenlake_s3_haver_uni_rollout.txt", 'w+') as f:
+with open("./results/63_frozenlake_s3_haver_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")

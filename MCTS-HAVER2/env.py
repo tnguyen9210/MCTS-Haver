@@ -106,7 +106,6 @@ class FrozenLakeCustom(FrozenLakeEnv):
                                 )
                     else:
                         if is_slippery:
-                            stop
                             if slippery_mode == "extreme":
                                 for b in [(a - 1) % 4, a, (a + 1) % 4]:
                                     li.append(

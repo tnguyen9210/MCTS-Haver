@@ -14,7 +14,7 @@ import multiprocess as mp
 import gym
 from env import FrozenLakeCustom, FrozenLakeSimulator
 
-from mcts_haver import run_mcts_trial
+from mcts_haver_stochastic import run_mcts_trial
 from value_iteration import value_iteration
 
 from config import parse_args
@@ -93,12 +93,13 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
     return ep_reward
 
 hparam_ucb_scale_list = np.arange(10, 100, 10)
-# hparam_ucb_scale_list = np.arange(20, 64, 4)
-hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
-# hparam_ucb_scale_list = [2**i for i in range(1, 9)]
+# hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
+hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
+print(hparam_ucb_scale_list)
 
 # num_trajectories_list = [200, 500, 1000, 1500, 2000, 2500, 3000]
-num_trajectories_list = [100, 200, 400, 600]
+# num_trajectories_list = [100, 200, 400, 600]
+num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,7)]
 
 best_param_list = []
 max_reward_mean_list = []
@@ -133,7 +134,7 @@ for num_trajectories in num_trajectories_list:
         reward_mean = np.mean(ep_reward_list)
         reward_std = np.std(ep_reward_list, ddof=1) if len(ep_reward_list) > 1 else 0
         reward_error = reward_std/np.sqrt(args["num_trials"])
-        if hparam_ucb_scale <= 128:
+        if hparam_ucb_scale <= hparam_ucb_scale_list[len(hparam_ucb_scale_list)//2]:
             res_text1 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
         else:
             res_text2 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
@@ -160,8 +161,11 @@ for num_trajectories in num_trajectories_list:
     max_reward_mean_list.append(max_reward_mean)
     best_param_list.append(best_param)
 
+print(res_text1)
+print(res_text2)
+    
 tmp = f"num_trials = {m} \n"
-with open("./results/62_frozenlake_s3_max_uni_rollout.txt", 'wr') as f:
+with open("./results/62_frozenlake_s3_max_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")

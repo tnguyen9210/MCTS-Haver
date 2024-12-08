@@ -106,7 +106,6 @@ class FrozenLakeCustom(FrozenLakeEnv):
                                 )
                     else:
                         if is_slippery:
-                            stop
                             if slippery_mode == "extreme":
                                 for b in [(a - 1) % 4, a, (a + 1) % 4]:
                                     li.append(
@@ -155,9 +154,9 @@ class FrozenLakeSimulator:
         trans_p = np.array([t[0] for t in transitions])
         # logging.warn(f"state={state}, trans_p = {trans_p}")
         # print()
-        print(state, action)
-        print(transitions)
-        print(trans_p)
+        # print(state, action)
+        # print(transitions)
+        # print(trans_p)
         # print(self.rng.choice(len(trans_p), 1, p=trans_p))
         idx = self.rng.choice(len(trans_p), 1, p=trans_p)[0]
         p, next_state, reward, terminated = transitions[idx]
