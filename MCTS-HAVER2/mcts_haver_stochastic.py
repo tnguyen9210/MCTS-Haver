@@ -16,15 +16,18 @@ import ipdb
 
 class MCTS:
     def __init__(self, simulator, rollout_Q, mcts_seed, args):
-        
+
+        self.tol = 1e-7
         self.simulator = simulator
         self.num_actions = simulator.num_actions
-        # self.action_multi = action_multi
+        self.num_actions = simulator.num_actions*args["action_multi"]
+        
         self.gamma = args["gamma"]
         self.num_trajectories = args["mcts_num_trajectories"]
         self.max_depth = args["mcts_max_depth"]
         self.rollout_max_depth = args["mcts_rollout_max_depth"]
         self.hparam_ucb_scale = args["hparam_ucb_scale"]
+        self.hparam_ucb_scale_mean = args["hparam_ucb_scale_mean"]
         self.hparam_haver_var = args["hparam_haver_var"]
 
         self.update_method = args["update_method"]
