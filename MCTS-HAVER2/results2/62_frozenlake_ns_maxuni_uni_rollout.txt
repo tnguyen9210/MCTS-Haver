@@ -1,0 +1,21 @@
+num_trials = 500
+
+-> num_trajectories = 100
+reward = -65.97 +/- 2.12
+max_reward_mean = -65.97
+it takes 19.6766
+
+-> num_trajectories = 200
+reward = -62.97 +/- 2.15
+max_reward_mean = -62.97
+it takes 38.6914
+
+-> num_trajectories = 400
+reward = -65.20 +/- 2.12
+max_reward_mean = -65.20
+it takes 69.7096
+
+-> num_trajectories = 600
+reward = -67.94 +/- 2.08
+max_reward_mean = -67.94
+it takes 98.8802
