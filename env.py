@@ -85,7 +85,7 @@ class FrozenLakeCustom(FrozenLakeEnv):
             # reward = float(newletter == b"G")
             reward = -1
             if newletter == b"G":
-                reward = 1
+                reward = 20
             elif newletter == b"H":
                 reward = -100
             return newstate, reward, terminated
