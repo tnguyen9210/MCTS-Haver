@@ -35,7 +35,7 @@ random.seed(0)
 
 # params
 args = parse_args()
-args["update_method"] = "max"
+args["update_method"] = "haver"
 args["rollout_method"] = ""
 args["render_mode"] = ""
 args["action_multi"] = 1
@@ -88,11 +88,17 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
 # hparam_ucb_scale_list = np.arange(10, 100, 10)
 # hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
 hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
+args["hparam_ucb_scale"] = 64
 
+# hparam_haver_std_list = np.arange(10, 100, 10)
+# hparam_haver_std_list = [0, 1/16, 1/8, 1/4, 1, 4, 8, 16]
+hparam_haver_std_list = [0] + [np.sqrt(100)**(i/2) for i in range(-3,3)]
 
-# num_trajectories_list = [200, 400, 100, 600, 800, 1000]
+# num_trajectories_list = [200, 500, 1000, 1500, 2000, 2500, 3000]
 # num_trajectories_list = [400, 600, 800]
 num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,7)]
+
+# num_trajectories_list = [2]
 
 best_param_list = []
 max_reward_mean_list = []
@@ -109,53 +115,76 @@ for num_trajectories in num_trajectories_list:
     start_time = time.time()
     res_text1 += f"{num_trajectories} "
     res_text2 += f"{num_trajectories} "
-    for hparam_ucb_scale in hparam_ucb_scale_list:
-        # start_time = time.time()
-
-        # print(f"hparam_ucb_scale = {hparam_ucb_scale}")
-        args["hparam_ucb_scale"] = hparam_ucb_scale
+    for hparam_ucb_scale in hparam_ucb_scale_list: 
         
-        pool = mp.Pool()
-        pool.starmap(
+        args["hparam_ucb_scale"] = hparam_ucb_scale
+        print(f"\n-> hparam_ucb_scale = {hparam_ucb_scale}")
+        log_text += f"\n-> hparam_ucb_scale = {hparam_ucb_scale} \n"
+        
+        max_reward_mean = -np.inf
+        best_param = None
+        max_reward_error = None
+        
+        for hparam_haver_std in hparam_haver_std_list:
+            # start_time = time.time()
+
+            args["hparam_haver_var"] = hparam_haver_std**2
+            # print(f"hparam_haver_var = {args['hparam_haver_var']}")
+            # print(f"hparam_ucb_scale = {args['hparam_ucb_scale']}")
+
+            pool = mp.Pool()
+            pool.starmap(
                 run_trial, 
                 [(i, Q_vit, env_seeds[i], simulator_seeds[i], mcts_seeds[i], args) for i in range(args["num_trials"])])
-        pool.close()
-        
-        reward_mean = np.mean(ep_reward_list)
-        reward_std = np.std(ep_reward_list, ddof=1) if len(ep_reward_list) > 1 else 0
-        reward_error = reward_std/np.sqrt(args["num_trials"])
-        if hparam_ucb_scale <= hparam_ucb_scale_list[len(hparam_ucb_scale_list)//2]:
-            res_text1 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
-        else:
-            res_text2 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
-        print(f"reward = {reward_mean:0.2f} +/- {reward_error:0.2f}")
-        log_text += f"reward = {reward_mean:0.2f} +/- {reward_error:0.2f} \n"
-        # Q_mcts_dict[f"{hparam_ucb_scale}"] = copy.deepcopy(Q_mcts_list)
+            pool.close()
+            
+            reward_mean = np.mean(ep_reward_list)
+            reward_std = np.std(ep_reward_list, ddof=1) if len(ep_reward_list) > 1 else 0
+            reward_error = reward_std/np.sqrt(args["num_trials"])
+            # if hparam_haver_std <= 8:
+            #     res_text1 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
+            # else:
+            #     res_text2 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
+            print(f"reward = {reward_mean:0.2f} \u00B1 {reward_error:0.2f}")
+            log_text += f"reward = {reward_mean:0.2f} \u00B1 {reward_error:0.2f} \n"
 
-        if reward_mean > max_reward_mean:
-            max_reward_mean = reward_mean 
-            best_param = hparam_ucb_scale
-    
-        ep_reward_list[:] = []
-        Q_mcts_list[:] = []
-    
-        end_time = time.time()
-        # print(f"it takes {end_time-start_time:0.4f}")
-    
+            if reward_mean > max_reward_mean:
+                max_reward_mean = reward_mean 
+                max_reward_error = reward_error
+                best_param = hparam_haver_std
+                
+            ep_reward_list[:] = []
+            Q_mcts_list[:] = []
+
+            end_time = time.time()
+            # print(f"it takes {end_time-start_time:0.4f}")
+        
+        if hparam_ucb_scale <= 128:
+            res_text1 += f"& {max_reward_mean:0.2f} (\u00B1{max_reward_error:0.2f}) "
+        else:
+            res_text2 += f"& {max_reward_mean:0.2f} (\u00B1{max_reward_error:0.2f}) "
+            
+        print(f"max_reward = {max_reward_mean:0.2f} \u00B1 {max_reward_error:0.2f}")
+        print(f"best_param = {best_param}")
+        log_text += f"max_reward = {max_reward_mean:0.2f} \u00B1 {max_reward_error:0.2f} \n"
+        log_text += f"best_param = {best_param} \n"
+            
     res_text1 += "\\\\ \n \hline \n"
     res_text2 += "\\\\ \n \hline \n"
-    
-    print(f"max_reward_mean = {max_reward_mean:0.2f}")
+
+    # print(f"max_reward_mean = {max_reward_mean:0.2f}")
     print(f"it takes {end_time-start_time:0.4f}")
-    
+    log_text += f"it takes {end_time-start_time:0.4f} \n"
+
     max_reward_mean_list.append(max_reward_mean)
     best_param_list.append(best_param)
+    
 
 print(res_text1)
 print(res_text2)
 
 tmp = f"num_trials = {m} \n"
-with open("./results/252_frozenlake_ns_max_uni_rollout_v1.txt", 'w+') as f:
+with open("./results/253_frozenlake_ns_haver_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
