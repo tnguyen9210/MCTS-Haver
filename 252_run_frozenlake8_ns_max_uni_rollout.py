@@ -127,7 +127,7 @@ for num_trajectories in num_trajectories_list:
         reward_mean = np.mean(ep_reward_list)
         reward_std = np.std(ep_reward_list, ddof=1) if len(ep_reward_list) > 1 else 0
         reward_error = reward_std/np.sqrt(args["num_trials"])
-        if hparam_ucb_scale <= hparam_ucb_scale_list[len(hparam_ucb_scale_list)//2]:
+        if hparam_ucb_scale < hparam_ucb_scale_list[len(hparam_ucb_scale_list)//2]:
             res_text1 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "
         else:
             res_text2 += f"& {reward_mean:0.2f} (\u00B1{reward_error:0.2f}) "

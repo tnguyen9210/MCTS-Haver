@@ -239,8 +239,7 @@ class MCTS:
             # logging.info(f"unvisited_actions={unvisited_actions}")
 
             if len(unvisited_actions) != 0:  # some nodes are not visited
-                # choose a random action
-                # action = unvisited_actions[self.rng.integers(len(unvisited_actions))]
+                # choose a random action 
                 action = self.rng.choice(unvisited_actions)
             elif len(unvisited_actions) == 0:
                 # choose an action that maximizes ucb
@@ -299,8 +298,6 @@ class MCTS:
                 action = np.argmax(self.rollout_Q[cur_state])
                 # logging.warning(f"cur_state={cur_state}, action={action}")
             else:
-                # actions = np.arange(self.num_actions)
-                # action = actions[self.rng.integers(len(actions))]
                 action = self.rng.choice(range(self.num_actions))
             # action = action % self.action_multi
             action_t = action % 4
