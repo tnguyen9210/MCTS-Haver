@@ -63,8 +63,8 @@ simulator = FrozenLakeSimulator(env.P, simulator_seed=0)
 
 V_vit, Q_vit = value_iteration(
     simulator, args["gamma"], args["vit_thres"])
-print(V_vit)
-stop
+# print(V_vit)
+# stop
 # global Q_vit_g = Q_vit
 
 manager = mp.Manager()
