@@ -38,6 +38,7 @@ args = parse_args()
 args["update_method"] = "max"
 args["rollout_method"] = ""
 args["render_mode"] = ""
+args["num_trials"] = 20
 args["action_multi"] = 1
 args["ep_max_steps"] = 40
 args["mcts_rollout_max_depth"] = 1000

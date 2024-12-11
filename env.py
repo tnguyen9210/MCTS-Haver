@@ -42,7 +42,7 @@ class FrozenLakeCustom(FrozenLakeEnv):
         desc=None,
         map_name="4x4",
         is_state_slippery=False,
-        is_slippery=True,
+        is_slippery=False,
         slippery_mode="extreme",
     ):
         # super().__init__()
