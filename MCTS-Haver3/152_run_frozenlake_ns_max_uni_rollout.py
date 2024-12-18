@@ -91,12 +91,12 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
 # hparam_ucb_scale_list = np.arange(10, 100, 10)
 # hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
 hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
-hparam_ucb_scale_list = [1,2]
+# hparam_ucb_scale_list = [1,2]
 
 # num_trajectories_list = [200, 400, 100, 600, 800, 1000]
 # num_trajectories_list = [400, 600, 800]
 num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,7)]
-num_trajectories_list = [100]
+# num_trajectories_list = [100]
 
 best_param_list = []
 max_reward_mean_list = []
