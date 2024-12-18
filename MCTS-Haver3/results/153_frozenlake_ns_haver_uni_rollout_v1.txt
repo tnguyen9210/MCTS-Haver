@@ -1,0 +1,221 @@
+num_trials = 500 
+
+-> num_trajectories = 100 
+
+-> hparam_ucb_scale = 10.0 
+reward = -35.21 ± 2.07 
+reward = -35.60 ± 2.07 
+reward = -35.99 ± 2.08 
+reward = -36.41 ± 2.08 
+reward = -37.34 ± 2.10 
+reward = -36.24 ± 2.08 
+reward = -39.00 ± 2.12 
+max_reward = -35.21 ± 2.07 
+best_param = 0 
+
+-> hparam_ucb_scale = 31.622776601683793 
+reward = -23.87 ± 1.81 
+reward = -24.06 ± 1.82 
+reward = -24.27 ± 1.83 
+reward = -24.85 ± 1.84 
+reward = -23.52 ± 1.80 
+reward = -23.67 ± 1.81 
+reward = -28.27 ± 1.94 
+max_reward = -23.52 ± 1.80 
+best_param = 1.0 
+
+-> hparam_ucb_scale = 100.0 
+reward = -18.68 ± 1.64 
+reward = -18.68 ± 1.64 
+reward = -18.87 ± 1.65 
+reward = -19.05 ± 1.65 
+reward = -21.78 ± 1.76 
+reward = -21.36 ± 1.74 
+reward = -25.81 ± 1.88 
+max_reward = -18.68 ± 1.64 
+best_param = 0.03162277660168379 
+
+-> hparam_ucb_scale = 316.22776601683796 
+reward = -19.38 ± 1.66 
+reward = -19.19 ± 1.65 
+reward = -19.39 ± 1.66 
+reward = -19.61 ± 1.67 
+reward = -20.02 ± 1.69 
+reward = -18.64 ± 1.63 
+reward = -26.37 ± 1.89 
+max_reward = -18.64 ± 1.63 
+best_param = 3.1622776601683795 
+
+-> hparam_ucb_scale = 1000.0 
+reward = -19.36 ± 1.66 
+reward = -19.37 ± 1.66 
+reward = -19.59 ± 1.67 
+reward = -19.36 ± 1.66 
+reward = -19.22 ± 1.66 
+reward = -19.05 ± 1.65 
+reward = -25.11 ± 1.85 
+max_reward = -19.05 ± 1.65 
+best_param = 3.1622776601683795 
+
+-> hparam_ucb_scale = 3162.2776601683795 
+reward = -18.80 ± 1.64 
+reward = -18.80 ± 1.64 
+reward = -18.99 ± 1.65 
+reward = -19.15 ± 1.65 
+reward = -18.05 ± 1.61 
+reward = -20.28 ± 1.70 
+reward = -25.29 ± 1.86 
+max_reward = -18.05 ± 1.61 
+best_param = 1.0 
+it takes 97.4583 
+
+-> num_trajectories = 316 
+
+-> hparam_ucb_scale = 10.0 
+reward = -30.01 ± 1.97 
+reward = -30.21 ± 1.98 
+reward = -30.02 ± 1.97 
+reward = -29.29 ± 1.95 
+reward = -29.21 ± 1.95 
+reward = -30.76 ± 1.99 
+reward = -31.92 ± 2.01 
+max_reward = -29.21 ± 1.95 
+best_param = 1.0 
+
+-> hparam_ucb_scale = 31.622776601683793 
+reward = -18.81 ± 1.64 
+reward = -18.82 ± 1.64 
+reward = -18.82 ± 1.64 
+reward = -18.03 ± 1.61 
+reward = -19.82 ± 1.68 
+reward = -20.96 ± 1.72 
+reward = -20.70 ± 1.72 
+max_reward = -18.03 ± 1.61 
+best_param = 0.31622776601683794 
+
+-> hparam_ucb_scale = 100.0 
+reward = -19.05 ± 1.66 
+reward = -19.24 ± 1.67 
+reward = -18.47 ± 1.64 
+reward = -18.67 ± 1.65 
+reward = -18.65 ± 1.64 
+reward = -18.46 ± 1.64 
+reward = -21.16 ± 1.74 
+max_reward = -18.46 ± 1.64 
+best_param = 3.1622776601683795 
+
+-> hparam_ucb_scale = 316.22776601683796 
+reward = -17.51 ± 1.60 
+reward = -17.32 ± 1.59 
+reward = -17.91 ± 1.61 
+reward = -17.73 ± 1.61 
+reward = -19.08 ± 1.66 
+reward = -18.49 ± 1.64 
+reward = -22.55 ± 1.79 
+max_reward = -17.32 ± 1.59 
+best_param = 0.03162277660168379 
+
+-> hparam_ucb_scale = 1000.0 
+reward = -17.72 ± 1.60 
+reward = -17.72 ± 1.60 
+reward = -17.14 ± 1.58 
+reward = -18.14 ± 1.62 
+reward = -18.92 ± 1.65 
+reward = -18.50 ± 1.64 
+reward = -22.17 ± 1.77 
+max_reward = -17.14 ± 1.58 
+best_param = 0.1 
+
+-> hparam_ucb_scale = 3162.2776601683795 
+reward = -18.51 ± 1.64 
+reward = -18.31 ± 1.63 
+reward = -17.72 ± 1.60 
+reward = -18.49 ± 1.64 
+reward = -18.89 ± 1.65 
+reward = -18.90 ± 1.65 
+reward = -21.58 ± 1.75 
+max_reward = -17.72 ± 1.60 
+best_param = 0.1 
+it takes 220.8448 
+
+-> num_trajectories = 1000 
+
+-> hparam_ucb_scale = 10.0 
+reward = -24.38 ± 1.82 
+reward = -24.38 ± 1.82 
+reward = -23.61 ± 1.80 
+reward = -25.55 ± 1.85 
+reward = -25.55 ± 1.85 
+reward = -24.74 ± 1.83 
+reward = -27.18 ± 1.90 
+max_reward = -23.61 ± 1.80 
+best_param = 0.1 
+
+-> hparam_ucb_scale = 31.622776601683793 
+reward = -15.86 ± 1.51 
+reward = -16.25 ± 1.53 
+reward = -15.09 ± 1.48 
+reward = -16.43 ± 1.54 
+reward = -16.05 ± 1.52 
+reward = -16.05 ± 1.52 
+reward = -16.84 ± 1.56 
+max_reward = -15.09 ± 1.48 
+best_param = 0.1 
+
+-> hparam_ucb_scale = 100.0 
+reward = -17.27 ± 1.59 
+reward = -17.46 ± 1.60 
+reward = -16.30 ± 1.54 
+reward = -17.46 ± 1.60 
+reward = -16.11 ± 1.54 
+reward = -17.08 ± 1.58 
+reward = -18.04 ± 1.62 
+max_reward = -16.11 ± 1.54 
+best_param = 1.0 
+
+-> hparam_ucb_scale = 316.22776601683796 
+reward = -18.24 ± 1.63 
+reward = -18.44 ± 1.64 
+reward = -18.24 ± 1.63 
+reward = -18.82 ± 1.65 
+reward = -17.27 ± 1.59 
+reward = -18.44 ± 1.64 
+reward = -19.20 ± 1.67 
+max_reward = -17.27 ± 1.59 
+best_param = 1.0 
+
+-> hparam_ucb_scale = 1000.0 
+reward = -18.05 ± 1.62 
+reward = -18.05 ± 1.62 
+reward = -17.85 ± 1.61 
+reward = -17.47 ± 1.60 
+reward = -17.66 ± 1.60 
+reward = -19.02 ± 1.66 
+reward = -20.95 ± 1.73 
+max_reward = -17.47 ± 1.60 
+best_param = 0.31622776601683794 
+
+-> hparam_ucb_scale = 3162.2776601683795 
+reward = -18.43 ± 1.64 
+reward = -18.63 ± 1.64 
+reward = -19.40 ± 1.68 
+reward = -18.24 ± 1.63 
+reward = -18.82 ± 1.65 
+reward = -18.44 ± 1.64 
+reward = -20.57 ± 1.72 
+max_reward = -18.24 ± 1.63 
+best_param = 0.31622776601683794 
+it takes 620.3854 
+
+100 & -35.21 (±2.07) & -23.52 (±1.80) & -18.68 (±1.64) \\ 
+ \hline 
+316 & -29.21 (±1.95) & -18.03 (±1.61) & -18.46 (±1.64) \\ 
+ \hline 
+1000 & -23.61 (±1.80) & -15.09 (±1.48) & -16.11 (±1.54) \\ 
+ \hline 
+100 & -18.64 (±1.63) & -19.05 (±1.65) & -18.05 (±1.61) \\ 
+ \hline 
+316 & -17.32 (±1.59) & -17.14 (±1.58) & -17.72 (±1.60) \\ 
+ \hline 
+1000 & -17.27 (±1.59) & -17.47 (±1.60) & -18.24 (±1.63) \\ 
+ \hline 
