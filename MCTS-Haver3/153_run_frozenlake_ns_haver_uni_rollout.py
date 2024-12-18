@@ -78,6 +78,7 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
     # env = FrozenLakeCustom(
     #     map_name=args["map_name"], is_slippery=args["is_slippery"],
     #     render_mode=args["render_mode"])
+    print(desc)
 
     simulator = FrozenLakeSimulator(env.P, simulator_seed)
 

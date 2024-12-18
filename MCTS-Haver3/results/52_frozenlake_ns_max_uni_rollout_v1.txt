@@ -1,0 +1,10 @@
+num_trials = 5 
+
+-> num_trajectories = 100 
+reward = 16.00 +/- 4.00 
+reward = 16.00 +/- 4.00 
+
+100 & 16.00 (±4.00) & 16.00 (±4.00) \\ 
+ \hline 
+100 \\ 
+ \hline 
