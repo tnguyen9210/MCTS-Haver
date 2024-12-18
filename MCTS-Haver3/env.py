@@ -83,9 +83,9 @@ class FrozenLakeCustom(FrozenLakeEnv):
             newletter = desc[newrow, newcol]
             terminated = bytes(newletter) in b"GH"
             # reward = float(newletter == b"G")
-            reward = 0
+            reward = -1
             if newletter == b"G":
-                reward = 20
+                reward = 1
             elif newletter == b"H":
                 reward = -100
             return newstate, reward, terminated
