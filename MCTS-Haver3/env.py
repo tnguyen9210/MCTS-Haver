@@ -174,7 +174,6 @@ def generate_random_map(env_seed):
     desc_concat = list("".join(desc))
     # print(desc)
     # print(desc_concat)
-    rng = np.random.Generator(np.random.PCG64(0))
     all_positions = range(15)
     for i in range(3):
         obs_pos = rng.choice(all_positions)
