@@ -12,7 +12,7 @@ import copy
 import multiprocess as mp
 
 import gym
-from env import FrozenLakeCustom, FrozenLakeSimulator
+from env import FrozenLakeCustom, FrozenLakeSimulator, generate_random_map
 
 from mcts_haver import run_mcts_trial
 from value_iteration import value_iteration
@@ -65,61 +65,6 @@ V_vit, Q_vit = value_iteration(
 manager = mp.Manager()
 ep_reward_list = manager.list()
 Q_mcts_list = manager.list()
-
-# desc = ["FFFF",
-#         "FFFF",
-#         "FFFF",
-#         "FFFG"]
-# desc_concat = list("".join(desc))
-# print(desc)
-# print(desc_concat)
-# rng = np.random.Generator(np.random.PCG64(0))
-# all_positions = range(15)
-# for i in range(3):
-#     obs_pos = rng.choice(all_positions)
-#     desc_concat[obs_pos] = "H"
-#     all_positions = list(set(all_positions) - set([obs_pos]))
-#     print(obs_pos)
-#     print(desc_concat)
-
-# start_positions = list(set(all_positions) - set([7,10,11,13,14,15]))
-# start_pos = rng.choice(start_positions)
-# desc_concat[start_pos] = "S"
-# # print(desc_concat)
-# desc = [''.join(desc_concat[:4]),''.join(desc_concat[4:8]),
-#                ''.join(desc_concat[8:12]),''.join(desc_concat[12:])]
-
-# print(desc)
-# stop
-
-def generate_random_map(env_seed):
-    rng = np.random.Generator(np.random.PCG64(env_seed))
-    
-    desc =  ["FFFF",
-             "FFFF",
-             "FFFF",
-             "FFFG"]
-
-    desc_concat = list("".join(desc))
-    # print(desc)
-    # print(desc_concat)
-    rng = np.random.Generator(np.random.PCG64(0))
-    all_positions = range(15)
-    for i in range(3):
-        obs_pos = rng.choice(all_positions)
-        desc_concat[obs_pos] = "H"
-        all_positions = list(set(all_positions) - set([obs_pos]))
-        # print(obs_pos)
-        # print(desc_concat)
-
-    start_positions = list(set(all_positions) - set([7,10,11,13,14,15]))
-    start_pos = rng.choice(start_positions)
-    desc_concat[start_pos] = "S"
-    # print(desc_concat)
-    desc = [''.join(desc_concat[:4]),''.join(desc_concat[4:8]),
-                   ''.join(desc_concat[8:12]),''.join(desc_concat[12:])]
-
-    return desc
 
 def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
 
