@@ -90,7 +90,7 @@ hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
 
 # num_trajectories_list = [200, 400, 100, 600, 800, 1000]
 # num_trajectories_list = [400, 600, 800]
-num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,7)]
+num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(2,5)]
 
 best_param_list = []
 max_reward_mean_list = []
