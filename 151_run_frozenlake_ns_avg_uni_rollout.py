@@ -117,6 +117,7 @@ for num_trajectories in num_trajectories_list:
         pool.starmap(
                 run_trial, 
                 [(i, Q_vit, env_seeds[i], simulator_seeds[i], mcts_seeds[i], args) for i in range(args["num_trials"])])
+        pool.close()
 
         reward_mean = np.mean(ep_reward_list)
         reward_std = np.std(ep_reward_list, ddof=1) if len(ep_reward_list) > 1 else 0
