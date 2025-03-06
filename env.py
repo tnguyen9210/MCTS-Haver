@@ -162,3 +162,5 @@ class FrozenLakeSimulator:
         p, next_state, reward, terminated = transitions[idx]
         # logging.info(f"state, action, next_state, terminated = {state, action, next_state, terminated}")
         return (next_state, reward, terminated, False, {"prob": p})
+
+    
