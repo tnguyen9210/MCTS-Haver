@@ -96,6 +96,7 @@ hparam_haver_std_list = [0] + [np.sqrt(100)**(i/2) for i in range(-3,3)]
 # num_trajectories_list = [400, 600, 800]
 # num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(2,5)]
 num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,7)]
+num_trajectories_list = [int(4**(i/2)) for i in range(5,9)]
 
 # num_trajectories_list = [2]
 
