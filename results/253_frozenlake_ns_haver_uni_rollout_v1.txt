@@ -1,33 +1,33 @@
 num_trials = 500 
 
--> num_trajectories = 316 
+-> num_trajectories = 1000 
 
 -> hparam_ucb_scale = 100.0 
-reward = 0.30 ± 0.08 
-reward = 0.56 ± 0.10 
-reward = 0.56 ± 0.10 
-reward = 0.60 ± 0.11 
-max_reward = 0.60 ± 0.11 
-best_param = 10.0 
+reward = 6.42 ± 0.21 
+reward = 7.14 ± 0.20 
+reward = 7.14 ± 0.20 
+reward = 7.12 ± 0.20 
+max_reward = 7.14 ± 0.20 
+best_param = 100.0 
 
 -> hparam_ucb_scale = 316.22776601683796 
-reward = 0.58 ± 0.10 
-reward = 0.78 ± 0.12 
-reward = 0.76 ± 0.12 
-reward = 0.74 ± 0.12 
-max_reward = 0.78 ± 0.12 
+reward = 6.40 ± 0.21 
+reward = 6.94 ± 0.21 
+reward = 6.94 ± 0.21 
+reward = 6.90 ± 0.21 
+max_reward = 6.94 ± 0.21 
 best_param = 100.0 
 
 -> hparam_ucb_scale = 1000.0 
-reward = 0.54 ± 0.10 
-reward = 0.80 ± 0.12 
-reward = 0.78 ± 0.12 
-reward = 0.78 ± 0.12 
-max_reward = 0.80 ± 0.12 
+reward = 6.46 ± 0.21 
+reward = 7.30 ± 0.20 
+reward = 7.30 ± 0.20 
+reward = 7.24 ± 0.20 
+max_reward = 7.30 ± 0.20 
 best_param = 100.0 
-it takes 1397.8629 
+it takes 3463.1180 
 
-316 & 0.60 (±0.11) \\ 
+1000 & 7.14 (±0.20) \\ 
  \hline 
-316 & 0.78 (±0.12) & 0.80 (±0.12) \\ 
+1000 & 6.94 (±0.21) & 7.30 (±0.20) \\ 
  \hline 
