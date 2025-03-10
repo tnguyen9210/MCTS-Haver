@@ -39,6 +39,7 @@ args["update_method"] = "haver"
 args["rollout_method"] = ""
 args["render_mode"] = ""
 args["action_multi"] = 1
+args["mcts_rollout_max_depth"] = 500
 print(f"num_trials = {args['num_trials']}")
 
 m = args["num_trials"]

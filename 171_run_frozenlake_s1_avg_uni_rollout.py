@@ -35,7 +35,7 @@ random.seed(0)
 
 # params
 args = parse_args()
-args["update_method"] = "max"
+args["update_method"] = "avg"
 args["rollout_method"] = ""
 args["render_mode"] = ""
 args["action_multi"] = 1
@@ -96,6 +96,7 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
 hparam_ucb_scale_list = np.arange(10, 100, 10)
 # hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
 hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,8)]
+# print(hparam_ucb_scale_list)
 
 # num_trajectories_list = [200, 500, 1000, 1500, 2000, 2500, 3000]
 # num_trajectories_list = [100, 200, 400, 600]
