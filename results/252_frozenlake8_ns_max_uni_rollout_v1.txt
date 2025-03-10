@@ -1,4 +1,5 @@
-num_trials = 100 
+num_trials = 100
+
 
 -> num_trajectories = 316 
 reward = 0.90 +/- 0.29 
