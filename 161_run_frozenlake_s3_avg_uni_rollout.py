@@ -35,11 +35,10 @@ random.seed(0)
 
 # params
 args = parse_args()
-args["update_method"] = "max"
+args["update_method"] = "avg"
 args["rollout_method"] = ""
 args["render_mode"] = ""
 args["action_multi"] = 1
-args["mcts_rollout_max_depth"] = 500
 print(f"num_trials = {args['num_trials']}")
 
 
@@ -52,10 +51,10 @@ mcts_seeds = random_seeds[2*m:]
 #
 env_id = "FrozenLake-v1"
 args["ep_max_steps"] = 20
-args["map_name"] = "4x4"
+args["map_name"] = "4x4X"
 args["is_state_slippery"] = True
-args["is_slippery"] = True
-args["slippery_mode"] = "extreme"
+args["is_slippery"] = False
+args["slippery_mode"] = "mild"
 
 env = FrozenLakeCustom(
     map_name=args["map_name"], 
@@ -166,7 +165,7 @@ print(res_text1)
 print(res_text2)
     
 tmp = f"num_trials = {m} \n"
-with open("./results/72_frozenlake_s1_max_uni_rollout_v1.txt", 'w+') as f:
+with open("./results/62_frozenlake_s3_max_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
