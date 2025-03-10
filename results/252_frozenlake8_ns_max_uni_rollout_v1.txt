@@ -1,4 +1,5 @@
 num_trials = 100
+mcts_rollout_max_depth = 2000
 
 
 -> num_trajectories = 316 
