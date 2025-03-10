@@ -165,7 +165,7 @@ print(res_text1)
 print(res_text2)
     
 tmp = f"num_trials = {m} \n"
-with open("./results/62_frozenlake_s3_max_uni_rollout_v1.txt", 'w+') as f:
+with open("./results/161_frozenlake_s3_avg_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
