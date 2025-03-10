@@ -1,0 +1,17 @@
+num_trials = 500 
+
+-> num_trajectories = 800 
+
+-> hparam_ucb_scale = 316.22776601683796 
+reward = 5.10 ± 0.22 
+reward = 5.82 ± 0.22 
+reward = 5.82 ± 0.22 
+reward = 5.82 ± 0.22 
+max_reward = 5.82 ± 0.22 
+best_param = 100.0 
+it takes 951.5100 
+
+800 \\ 
+ \hline 
+800 & 5.82 (±0.22) \\ 
+ \hline 
