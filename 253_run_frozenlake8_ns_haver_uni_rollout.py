@@ -89,7 +89,7 @@ def run_trial(i_trial, Q_vit, env_seed, simulator_seed, mcts_seed, args):
 
 # hparam_ucb_scale_list = np.arange(10, 100, 10)
 # hparam_ucb_scale_list = [32, 64, 128, 256, 512, 1024]
-hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(2,6)]
+hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(5,6)]
 # hparam_ucb_scale_list = [np.sqrt(100)**(i/2) for i in range(4,7)]
 args["hparam_ucb_scale"] = 64
 print(hparam_ucb_scale_list)
@@ -192,7 +192,7 @@ print(res_text1)
 print(res_text2)
 
 tmp = f"num_trials = {m} \n"
-with open("./results/253_frozenlake_ns_haver_uni_rollout_v22.txt", 'w+') as f:
+with open("./results/253_frozenlake_ns_haver_uni_rollout_v221.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
