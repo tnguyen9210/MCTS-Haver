@@ -41,7 +41,7 @@ args["render_mode"] = ""
 args["num_trials"] = 100
 args["action_multi"] = 1
 args["ep_max_steps"] = 40
-args["mcts_rollout_max_depth"] = 2000
+args["mcts_rollout_max_depth"] = 1000
 print(f"num_trials = {args['num_trials']}")
 
 m = args["num_trials"]
@@ -158,7 +158,7 @@ print(res_text1)
 print(res_text2)
 
 tmp = f"num_trials = {m} \n"
-with open("./results/252_frozenlake_ns_max_uni_rollout_v1.txt", 'w+') as f:
+with open("./results/252_frozenlake8_ns_max_uni_rollout_v1.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
