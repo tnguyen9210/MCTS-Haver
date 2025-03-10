@@ -41,7 +41,7 @@ args["render_mode"] = ""
 args["num_trials"] = 500
 args["action_multi"] = 1
 args["ep_max_steps"] = 40
-args["mcts_rollout_max_depth"] = 500
+args["mcts_rollout_max_depth"] = 1000
 print(f"num_trials = {args['num_trials']}")
 print(f"mcts_rollout_max_depth = {args['mcts_rollout_max_depth']}")
 
@@ -101,8 +101,8 @@ print(hparam_haver_std_list)
 
 # num_trajectories_list = [200, 500, 1000, 1500, 2000, 2500, 3000]
 # num_trajectories_list = [400, 600, 800]
-num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(5,6)]
-# num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(6,7)]
+# num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(5,6)]
+num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(6,7)]
 
 # num_trajectories_list = [2]
 
