@@ -41,7 +41,7 @@ args["render_mode"] = ""
 args["num_trials"] = 500
 args["action_multi"] = 1
 args["ep_max_steps"] = 40
-args["mcts_rollout_max_depth"] = 2000
+args["mcts_rollout_max_depth"] = 1000
 print(f"num_trials = {args['num_trials']}")
 print(f"mcts_rollout_max_depth = {args['mcts_rollout_max_depth']}")
 
