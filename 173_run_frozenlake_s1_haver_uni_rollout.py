@@ -106,6 +106,7 @@ print(hparam_haver_std_list)
 # num_trajectories_list = [400, 600, 800]
 num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,5)]
 num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(5,6)]
+num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(6,7)]
 # num_trajectories_list = [int(np.sqrt(100)**(i/2)) for i in range(4,7)]
 
 # num_trajectories_list = [2]
@@ -194,7 +195,7 @@ print(res_text1)
 print(res_text2)
 
 tmp = f"num_trials = {m} \n"
-with open("./results/173_frozenlake_s1_haver_uni_rollout_v12.txt", 'w+') as f:
+with open("./results/173_frozenlake_s1_haver_uni_rollout_v13.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
