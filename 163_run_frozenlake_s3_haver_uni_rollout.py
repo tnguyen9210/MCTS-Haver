@@ -41,6 +41,7 @@ args["render_mode"] = ""
 args["action_multi"] = 1
 args["mcts_rollout_max_depth"] = 1000
 print(f"num_trials = {args['num_trials']}")
+print(f"mcts_rollout_max_depth = {args['mcts_rollout_max_depth']}")
 
 m = args["num_trials"]
 random_seeds = np.loadtxt("random_seeds.txt").astype("int64")
