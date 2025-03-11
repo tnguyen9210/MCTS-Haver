@@ -39,7 +39,7 @@ args["update_method"] = "avg"
 args["rollout_method"] = ""
 args["render_mode"] = ""
 args["action_multi"] = 1
-args["mcts_rollout_max_depth"] = 500
+args["mcts_rollout_max_depth"] = 1000
 print(f"num_trials = {args['num_trials']}")
 
 
@@ -50,7 +50,7 @@ simulator_seeds = random_seeds[m:2*m]
 mcts_seeds = random_seeds[2*m:]
 
 #
-env_id = "FrozenLake-v1"
+env_id = "frozenlake-v1"
 args["ep_max_steps"] = 20
 args["map_name"] = "4x4"
 args["is_state_slippery"] = True
