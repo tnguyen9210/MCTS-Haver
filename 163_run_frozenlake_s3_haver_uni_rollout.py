@@ -39,6 +39,7 @@ args["update_method"] = "haver"
 args["rollout_method"] = ""
 args["render_mode"] = ""
 args["action_multi"] = 1
+args["mcts_rollout_max_depth"] = 1000
 print(f"num_trials = {args['num_trials']}")
 
 m = args["num_trials"]
@@ -98,7 +99,6 @@ print(hparam_ucb_scale_list)
 
 # hparam_haver_std_list = np.arange(10, 100, 10)
 # hparam_haver_std_list = [0, 1/16, 1/8, 1/4, 1, 4, 8, 16]
-hparam_haver_std_list = [0] + [np.sqrt(100)**(i/2) for i in range(-3,3)]
 hparam_haver_std_list = [0] + [np.sqrt(100)**(i/2) for i in range(4,-1,-1)]
 print(hparam_haver_std_list)
 
@@ -192,7 +192,7 @@ print(res_text1)
 print(res_text2)
 
 tmp = f"num_trials = {m} \n"
-with open("./results/163_frozenlake_s3_haver_uni_rollout_v1.txt", 'w+') as f:
+with open("./results/163_frozenlake_s3_haver_uni_rollout_v2.txt", 'w+') as f:
     f.write(tmp)
     f.write(log_text)
     f.write("\n")
